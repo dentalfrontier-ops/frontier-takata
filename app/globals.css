@@ -1,0 +1,2512 @@
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:linear-gradient(180deg,#e8f8ff 0%,#f6fbff 45%,#f4f8fb 100%);
+  color:#0f2f3d;
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+  padding-bottom:86px;
+}
+button,input,select,textarea{font:inherit}
+.wrap{max-width:640px;margin:auto;padding:16px}
+.head{
+  background:linear-gradient(135deg,#0ea5d7,#0369a1);
+  color:white;
+  border-radius:22px;
+  padding:18px;
+  margin-bottom:14px;
+  box-shadow:0 8px 20px rgba(3,105,161,.22);
+}
+.head h1{margin:0;font-size:25px}
+.card{
+  background:rgba(255,255,255,.94);
+  border:1px solid #bae6fd;
+  border-radius:20px;
+  padding:16px;
+  box-shadow:0 6px 18px rgba(14,165,215,.12);
+  margin-bottom:14px;
+}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.stat{
+  background:linear-gradient(135deg,#0284c7,#38bdf8);
+  color:#fff;
+  border-radius:16px;
+  padding:14px;
+  text-align:center;
+  box-shadow:0 4px 10px rgba(2,132,199,.16);
+}
+.stat b{display:block;font-size:25px}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.menu button{
+  border:1px solid #7dd3fc;
+  background:#e0f7ff;
+  color:#075985;
+  border-radius:16px;
+  padding:18px 8px;
+  font-weight:900;
+}
+.primary{
+  width:100%;
+  border:0;
+  background:linear-gradient(135deg,#0284c7,#0ea5e9);
+  color:white;
+  border-radius:14px;
+  padding:15px;
+  margin-top:12px;
+  font-weight:900;
+  box-shadow:0 4px 10px rgba(2,132,199,.2);
+}
+.secondary{
+  border:1px solid #7dd3fc;
+  background:#e0f7ff;
+  color:#075985;
+  border-radius:12px;
+  padding:10px 12px;
+  margin-top:8px;
+  font-weight:800;
+  width:100%;
+}
+.danger{background:#e11d48!important;color:white!important;border-color:#e11d48!important}
+.done{background:#0f766e!important;color:white!important;border-color:#0f766e!important}
+label{display:block;font-weight:800;margin-top:14px;color:#0f3f56}
+input,select,textarea{
+  width:100%;
+  padding:12px;
+  border:1px solid #93c5fd;
+  border-radius:12px;
+  margin-top:5px;
+  background:#fff;
+}
+input:focus,select:focus,textarea:focus{
+  outline:3px solid rgba(14,165,233,.22);
+  border-color:#0ea5e9;
+}
+textarea{min-height:78px}
+.item{
+  background:#ffffff;
+  border:1px solid #dbeafe;
+  border-left:6px solid #0ea5e9;
+  border-radius:15px;
+  padding:12px;
+  margin-top:10px;
+  box-shadow:0 3px 10px rgba(14,165,233,.08);
+}
+.item.completed{opacity:.78;border-left-color:#0f766e}
+.row{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.big{font-size:18px;font-weight:900;margin-top:6px;color:#083344}
+.small{font-size:13px;color:#477082;line-height:1.5}
+.msg{text-align:center;color:#0369a1;font-weight:900;white-space:pre-line;margin-top:12px}
+.checks{border:1px solid #bae6fd;border-radius:12px;padding:8px;background:#f0faff;max-height:220px;overflow:auto}
+.checkrow{display:flex;gap:8px;align-items:center;padding:8px;border-bottom:1px solid #dbeafe}
+.checkrow input{width:auto}
+.mini{
+  border:1px solid #7dd3fc;
+  border-radius:12px;
+  padding:9px 12px;
+  font-weight:800;
+  background:#e0f7ff;
+  color:#075985;
+}
+.badge{
+  display:inline-block;
+  background:#e0f2fe;
+  color:#0369a1;
+  border:1px solid #7dd3fc;
+  border-radius:999px;
+  padding:4px 8px;
+  margin:2px;
+  font-size:12px;
+  font-weight:800;
+}
+.detail{
+  background:#f0faff;
+  border:2px solid #38bdf8;
+  border-radius:18px;
+  padding:14px;
+  margin:12px 0;
+}
+.tomorrowBox{
+  background:linear-gradient(180deg,#effaff,#ffffff);
+  border:2px solid #38bdf8;
+  border-radius:20px;
+  padding:14px;
+  margin-top:18px;
+  box-shadow:0 4px 14px rgba(56,189,248,.14);
+}
+.tomorrowHead{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:8px;
+}
+.tomorrowHead h2,.tomorrowHead h3{margin:0;color:#075985}
+.tomorrowCount{
+  background:#0284c7;
+  color:#fff;
+  border-radius:999px;
+  padding:8px 12px;
+  font-weight:900;
+  white-space:nowrap;
+}
+.tomorrowBox .item{
+  background:#fff;
+  border-left:7px solid #38bdf8;
+}
+.tomorrowBox .big{font-size:20px}
+.bottom{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:rgba(255,255,255,.96);
+  border-top:1px solid #bae6fd;
+  padding:8px;
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:5px;
+  z-index:10;
+  box-shadow:0 -4px 16px rgba(14,165,233,.12);
+}
+.bottom button{
+  border:1px solid #bae6fd;
+  border-radius:13px;
+  background:#effaff;
+  color:#075985;
+  padding:8px 1px;
+  font-size:11px;
+  font-weight:900;
+}
+.bottom button.on{
+  background:#0284c7;
+  color:#fff;
+  border-color:#0284c7;
+}
+@media(max-width:430px){
+  .grid2,.grid3{grid-template-columns:1fr}
+  .bottom button{font-size:10px;padding:7px 0}
+}
+
+
+.phoneBox{
+  background:#f0faff;
+  border:1px solid #bae6fd;
+  border-radius:14px;
+  padding:10px;
+  margin-top:10px;
+}
+.phoneBox .phone{
+  background:#e0f7ff;
+  border-color:#38bdf8;
+  color:#075985;
+}
+.phoneBox .grid2{
+  margin-top:4px;
+}
+
+
+.secondary.next{
+  background:#dff7ff;
+  border-color:#0ea5e9;
+  color:#0369a1;
+}
+
+
+.frequencyHelp{
+  background:#e0f7ff;
+  border:1px solid #7dd3fc;
+  border-radius:12px;
+  padding:10px;
+  margin-top:8px;
+  color:#075985;
+  font-size:13px;
+  line-height:1.5;
+}
+
+
+.calendarBox{
+  background:#ffffff;
+  border:2px solid #38bdf8;
+  border-radius:20px;
+  padding:14px;
+  margin-bottom:18px;
+  box-shadow:0 4px 14px rgba(56,189,248,.12);
+}
+.calendarHead{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+  margin-bottom:10px;
+}
+.calendarHead h2{
+  margin:0;
+  color:#075985;
+  font-size:20px;
+}
+.weekRow{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:4px;
+  margin-top:12px;
+  color:#0369a1;
+  font-weight:900;
+  text-align:center;
+  font-size:12px;
+}
+.monthGrid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:4px;
+  margin-top:4px;
+}
+.dayCell{
+  min-height:86px;
+  background:#f0faff;
+  border:1px solid #bae6fd;
+  border-radius:10px;
+  padding:5px;
+  overflow:hidden;
+}
+.dayCell.empty{
+  background:transparent;
+  border:0;
+}
+.todayCell{
+  background:#dff7ff;
+  border:2px solid #0284c7;
+}
+.dayNum{
+  font-weight:900;
+  color:#075985;
+  margin-bottom:4px;
+}
+.daySchedule{
+  display:block;
+  width:100%;
+  border:0;
+  border-radius:7px;
+  background:#0284c7;
+  color:#fff;
+  font-size:10px;
+  text-align:left;
+  padding:4px;
+  margin-top:3px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.more{
+  font-size:10px;
+  color:#0369a1;
+  font-weight:900;
+  margin-top:3px;
+}
+@media(max-width:430px){
+  .dayCell{min-height:72px;padding:3px}
+  .daySchedule{font-size:9px;padding:3px}
+  .calendarHead h2{font-size:18px}
+}
+
+
+.dayCell{
+  text-align:left;
+  cursor:pointer;
+}
+.dayCell:active{
+  transform:scale(.98);
+}
+.dayDetail{
+  background:#ffffff;
+  border:2px solid #0ea5e9;
+  border-radius:20px;
+  padding:14px;
+  margin:14px 0 18px;
+  box-shadow:0 4px 14px rgba(14,165,233,.12);
+}
+.dayDetailHead{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+.dayDetailHead h2{
+  margin:0;
+  color:#075985;
+  font-size:20px;
+}
+
+.item .big{word-break:break-word;}
+
+
+.secondary.patientDetail{
+  background:#dff7ff;
+  border-color:#0284c7;
+  color:#075985;
+}
+
+
+.nextDraftBox{
+  background:#e0f7ff;
+  border:2px solid #0ea5e9;
+  border-radius:18px;
+  padding:14px;
+  margin:12px 0 16px;
+  box-shadow:0 4px 14px rgba(14,165,233,.15);
+}
+.nextDraftBox b{
+  color:#075985;
+  font-size:18px;
+}
+.nextDraftBox .grid3{
+  margin-top:8px;
+  margin-bottom:8px;
+}
+.secondary.next{
+  background:#dff7ff;
+  border-color:#0284c7;
+  color:#075985;
+  font-weight:900;
+}
+
+
+.nextPageBox{
+  background:#ffffff;
+  border:2px solid #0ea5e9;
+  border-radius:22px;
+  padding:16px;
+  box-shadow:0 6px 18px rgba(14,165,233,.16);
+}
+.nextSummary{
+  background:#e0f7ff;
+  border:1px solid #7dd3fc;
+  border-radius:14px;
+  padding:12px;
+  margin:10px 0 12px;
+}
+.nextPageBox h2{
+  margin:0;
+  color:#075985;
+}
+
+
+.routeBox{
+  background:#ffffff;
+  border:2px solid #0ea5e9;
+  border-radius:20px;
+  padding:14px;
+  margin-bottom:16px;
+  box-shadow:0 4px 14px rgba(14,165,233,.12);
+}
+.routeHead{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:8px;
+}
+.routeHead h2{
+  margin:0;
+  color:#075985;
+}
+.routeItem{
+  width:100%;
+  border:1px solid #bae6fd;
+  background:#f0faff;
+  color:#075985;
+  border-radius:14px;
+  padding:12px;
+  margin-top:8px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  text-align:left;
+  font-weight:900;
+}
+.flashTarget{
+  animation:flashTargetAnim 1.2s ease;
+}
+@keyframes flashTargetAnim{
+  0%{box-shadow:0 0 0 4px rgba(14,165,233,.55); transform:scale(1.01);}
+  100%{box-shadow:none; transform:scale(1);}
+}
+.nextPageBox{
+  background:#ffffff;
+  border:2px solid #0ea5e9;
+  border-radius:22px;
+  padding:16px;
+  box-shadow:0 6px 18px rgba(14,165,233,.16);
+  margin-bottom:16px;
+}
+.nextSummary{
+  background:#e0f7ff;
+  border:1px solid #7dd3fc;
+  border-radius:14px;
+  padding:12px;
+  margin:10px 0 12px;
+}
+.nextPageBox h2{
+  margin:0;
+  color:#075985;
+}
+.nextPageBox .checks{
+  max-height:180px;
+}
+
+
+.secondary.routeBack{
+  background:#e0f7ff;
+  border-color:#0284c7;
+  color:#075985;
+  font-weight:900;
+}
+
+
+.travelLine{
+  margin:6px 0 4px 16px;
+  color:#075985;
+  font-weight:900;
+  font-size:13px;
+  background:#e0f7ff;
+  border-left:4px solid #0ea5e9;
+  border-radius:10px;
+  padding:8px 10px;
+}
+
+
+.secondary.geoButton{
+  background:#dff7ff;
+  border-color:#0284c7;
+  color:#075985;
+  font-weight:900;
+}
+
+
+.bulkBox{
+  background:#f0faff;
+  border:1px solid #bae6fd;
+  border-radius:16px;
+  padding:12px;
+  margin:10px 0 14px;
+}
+.bulkBox .secondary{
+  margin-top:6px;
+}
+
+
+.completionBox{
+  background:#f0faff;
+  border:1px solid #bae6fd;
+  border-radius:14px;
+  padding:10px;
+  margin:8px 0;
+}
+.progressOuter{
+  height:10px;
+  background:#dbeafe;
+  border-radius:999px;
+  overflow:hidden;
+  margin:6px 0 8px;
+}
+.progressInner{
+  height:100%;
+  background:#0ea5e9;
+  border-radius:999px;
+}
+.roomBadge{
+  display:inline-block;
+  background:#e0f2fe;
+  color:#075985;
+  border:1px solid #7dd3fc;
+  border-radius:999px;
+  padding:5px 10px;
+  margin-top:6px;
+  font-size:13px;
+  font-weight:900;
+}
+
+
+.compactCard{
+  padding:10px 12px;
+  border-left-width:5px;
+}
+.compactTop{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+.compactTime{
+  font-size:13px;
+  font-weight:900;
+  color:#075985;
+}
+.compactPatient{
+  font-size:18px;
+  font-weight:900;
+  color:#083344;
+  margin-top:3px;
+}
+.compactMeta{
+  font-size:13px;
+  color:#477082;
+  margin-top:2px;
+}
+.circleDone{
+  width:44px;
+  height:44px;
+  border-radius:999px;
+  border:2px solid #0ea5e9;
+  background:#ffffff;
+  color:#0284c7;
+  font-size:22px;
+  font-weight:900;
+  flex:0 0 44px;
+}
+.circleDone.on{
+  background:#0f766e;
+  color:#fff;
+  border-color:#0f766e;
+}
+.compactProgress{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:8px;
+  font-size:12px;
+  color:#075985;
+  font-weight:900;
+}
+.compactProgress .progressOuter{
+  flex:1;
+  margin:0;
+}
+.compactDetails{
+  margin-top:8px;
+}
+.compactDetails summary{
+  list-style:none;
+  cursor:pointer;
+  background:#e0f7ff;
+  color:#075985;
+  border:1px solid #7dd3fc;
+  border-radius:12px;
+  padding:9px 10px;
+  font-weight:900;
+  text-align:center;
+}
+.compactDetails summary::-webkit-details-marker{
+  display:none;
+}
+.detailGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:8px;
+}
+.compactDetails .secondary{
+  margin-top:0;
+}
+
+
+.dayDetail .routeBox{
+  margin-top:12px;
+  margin-bottom:12px;
+}
+
+
+.startPoint{
+  background:#075985;
+  color:#fff;
+  border-radius:14px;
+  padding:11px 12px;
+  font-weight:900;
+  margin:8px 0;
+}
+.startTravel{
+  margin-left:0;
+  border-left-color:#075985;
+}
+.compactActions{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  flex:0 0 58px;
+}
+.nextAlways{
+  border:0;
+  background:#0284c7;
+  color:#fff;
+  border-radius:999px;
+  padding:8px 10px;
+  font-weight:900;
+  font-size:12px;
+  width:58px;
+}
+
+
+.returnTravel{
+  margin-top:10px;
+  border-left-color:#075985;
+}
+.endPoint{
+  background:#075985;
+  color:#fff;
+  border-radius:14px;
+  padding:11px 12px;
+  font-weight:900;
+  margin:8px 0;
+}
+.routeTotal{
+  background:#e0f7ff;
+  border:1px solid #7dd3fc;
+  border-radius:14px;
+  padding:10px 12px;
+  color:#075985;
+  font-weight:900;
+  text-align:center;
+}
+.facilityGroupHeader{
+  background:linear-gradient(135deg,#dff7ff,#ffffff);
+  border:2px solid #0ea5e9;
+  border-radius:18px;
+  padding:12px;
+  margin-top:16px;
+  box-shadow:0 4px 12px rgba(14,165,233,.12);
+}
+.facilityGroupTime{
+  font-size:17px;
+  font-weight:900;
+  color:#075985;
+}
+.facilityGroupHeader + .compactCard{
+  margin-top:8px;
+}
+.nextAlways{
+  font-size:13px;
+  width:64px;
+  padding:9px 8px;
+}
+
+
+#schedule-form{
+  scroll-margin-top:16px;
+  background:#e0f7ff;
+  border:1px solid #7dd3fc;
+  border-radius:14px;
+  padding:10px 12px;
+  color:#075985;
+}
+
+
+.unifiedPage{
+  background:#ffffff;
+  border:1px solid #bae6fd;
+  border-radius:20px;
+  padding:14px;
+  margin-bottom:16px;
+  box-shadow:0 4px 14px rgba(14,165,233,.10);
+}
+.unifiedHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+}
+.unifiedHeader h2{
+  margin:0;
+  color:#075985;
+}
+.actionRow{
+  margin:10px 0 8px;
+}
+.actionRow .primary{
+  margin-top:0;
+}
+
+
+.facilityGroupHeader .danger{
+  font-weight:900;
+}
+.detailGrid .danger{
+  grid-column:auto;
+}
+
+
+.checkrow span{
+  font-weight:800;
+}
+
+
+.secondary.addPatient{
+  background:#dff7ff;
+  border-color:#0284c7;
+  color:#075985;
+  font-weight:900;
+}
+.facilityGroupHeader .grid3{
+  grid-template-columns:repeat(2,1fr);
+}
+
+
+.addPatientPanel{
+  background:#ffffff;
+  border:1px solid #7dd3fc;
+  border-radius:14px;
+  padding:10px;
+  margin-top:10px;
+}
+.addCandidates{
+  max-height:180px;
+  overflow:auto;
+  margin-top:6px;
+}
+.addPatientPanel .primary,
+.addPatientPanel .secondary{
+  margin-top:8px;
+}
+
+
+.editScheduleBtn{
+  background:#f0f9ff;
+  border-color:#0284c7;
+  color:#075985;
+  font-weight:900;
+}
+.addressPriorityNote{
+  font-size:12px;
+  color:#477082;
+}
+
+
+/* Sprint5.7.1: iPhone keyboard/touch fix for patient add modal */
+.addPatientModal input,
+#add-patient-search-input{
+  font-size:16px;
+  -webkit-user-select:text;
+  user-select:text;
+}
+.searchButton{
+  width:100%;
+  margin-top:8px;
+  height:44px;
+  font-weight:900;
+}
+.modalBackdrop,
+.addPatientModal{
+  overscroll-behavior:contain;
+}
+.addPatientModal *{
+  touch-action:manipulation;
+}
+
+
+/* Sprint5.7.2: patient add real modal keyboard fix */
+.modalBackdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(8,47,73,.35);
+  z-index:1000;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  padding:12px;
+  overscroll-behavior:contain;
+}
+.addPatientModal{
+  width:100%;
+  max-width:520px;
+  max-height:82vh;
+  overflow:auto;
+  background:#fff;
+  border:2px solid #0ea5e9;
+  border-radius:22px 22px 16px 16px;
+  padding:16px;
+  box-shadow:0 12px 30px rgba(8,47,73,.28);
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.addPatientModal h2{
+  margin:0;
+  color:#075985;
+}
+.searchRow{
+  display:grid;
+  grid-template-columns:1fr 88px;
+  gap:8px;
+  align-items:center;
+}
+.searchRow input,
+#add-patient-search-input{
+  font-size:16px;
+  -webkit-user-select:text;
+  user-select:text;
+}
+.searchButton{
+  margin-top:0;
+  height:44px;
+  font-weight:900;
+}
+.modalCandidates{
+  max-height:42vh;
+  overflow:auto;
+  margin-top:8px;
+  -webkit-overflow-scrolling:touch;
+}
+.modalBackdrop,
+.addPatientModal,
+.addPatientModal *{
+  touch-action:manipulation;
+}
+.addPatientModal input{
+  touch-action:auto;
+}
+
+
+/* Sprint5.7.3 forced patient add modal */
+.modalBackdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(8,47,73,.38);
+  z-index:9999;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  padding:12px;
+  overscroll-behavior:contain;
+}
+.addPatientModal{
+  width:100%;
+  max-width:520px;
+  max-height:82vh;
+  overflow:auto;
+  background:#fff;
+  border:2px solid #0ea5e9;
+  border-radius:22px 22px 16px 16px;
+  padding:16px;
+  box-shadow:0 12px 30px rgba(8,47,73,.28);
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.addPatientModal h2{
+  margin:0;
+  color:#075985;
+}
+.searchRow{
+  display:grid;
+  grid-template-columns:1fr 88px;
+  gap:8px;
+  align-items:center;
+}
+.searchRow input,
+#add-patient-search-input{
+  font-size:16px;
+  -webkit-user-select:text;
+  user-select:text;
+}
+.searchButton{
+  margin-top:0;
+  height:44px;
+  font-weight:900;
+}
+.modalCandidates{
+  max-height:42vh;
+  overflow:auto;
+  margin-top:8px;
+  -webkit-overflow-scrolling:touch;
+}
+.modalBackdrop,
+.addPatientModal,
+.addPatientModal *{
+  touch-action:manipulation;
+}
+.addPatientModal input{
+  touch-action:auto;
+}
+
+
+.visitCountBadge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:22px;
+  height:22px;
+  border-radius:999px;
+  background:#0284c7;
+  color:#fff;
+  font-size:12px;
+  font-weight:900;
+  margin-right:6px;
+}
+.cardVisitCount{
+  margin-right:6px;
+  vertical-align:middle;
+}
+.compactMeta{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:2px;
+}
+.simpleRoutePatient{
+  padding-left:2px;
+}
+.simpleRoutePatient::before{
+  content:'・';
+  margin-right:2px;
+}
+
+
+.routeSplitBox{
+  scroll-margin-top:16px;
+}
+.routeSplitBox .routeBox{
+  margin-top:12px;
+}
+.routeNoBadge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  height:22px;
+  border-radius:999px;
+  background:#e0f2fe;
+  border:1px solid #7dd3fc;
+  color:#075985;
+  font-size:12px;
+  font-weight:900;
+  padding:0 8px;
+  margin-right:6px;
+}
+
+
+.todayMemoBox{
+  background:#fff7ed;
+  border:1px solid #fed7aa;
+  border-radius:14px;
+  padding:10px;
+  margin-top:10px;
+}
+.todayMemoBox label{
+  margin-top:0;
+  color:#9a3412;
+}
+.todayMemoBox textarea{
+  min-height:84px;
+  font-size:16px;
+  line-height:1.5;
+}
+
+
+.tutorialBackdrop{
+  position:fixed;
+  inset:0;
+  z-index:12000;
+  background:rgba(8,47,73,.42);
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  padding:14px;
+}
+.tutorialCard{
+  width:100%;
+  max-width:520px;
+  background:#ffffff;
+  border:2px solid #0ea5e9;
+  border-radius:24px 24px 18px 18px;
+  padding:18px;
+  box-shadow:0 16px 34px rgba(8,47,73,.28);
+}
+.tutorialTop{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+.tutorialBadge{
+  display:inline-block;
+  background:#e0f7ff;
+  color:#075985;
+  border:1px solid #7dd3fc;
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:12px;
+  font-weight:900;
+}
+.tutorialCard h2{
+  color:#075985;
+  margin:14px 0 8px;
+}
+.tutorialCard p{
+  color:#083344;
+  line-height:1.7;
+  font-weight:700;
+  margin:0 0 14px;
+}
+.tutorialDots{
+  display:flex;
+  justify-content:center;
+  gap:6px;
+  margin:12px 0 14px;
+}
+.tutorialDots span{
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  background:#bae6fd;
+}
+.tutorialDots span.on{
+  background:#0284c7;
+  width:22px;
+}
+.tutorialSkip{
+  width:100%;
+  margin-top:10px;
+}
+
+
+.tutorialOverlay{
+  position:fixed;
+  inset:0;
+  z-index:13000;
+  background:rgba(8,47,73,.22);
+  pointer-events:none;
+}
+.tutorialHint{
+  position:fixed;
+  left:12px;
+  right:12px;
+  bottom:14px;
+  background:#fff;
+  border:2px solid #0ea5e9;
+  border-radius:22px;
+  padding:16px;
+  box-shadow:0 16px 34px rgba(8,47,73,.28);
+  pointer-events:auto;
+}
+.tutorialTop{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+.tutorialBadge{
+  display:inline-block;
+  background:#e0f7ff;
+  color:#075985;
+  border:1px solid #7dd3fc;
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:12px;
+  font-weight:900;
+}
+.tutorialHint h2{
+  color:#075985;
+  margin:12px 0 8px;
+}
+.tutorialHint p{
+  color:#083344;
+  line-height:1.65;
+  font-weight:700;
+  margin:0 0 10px;
+}
+.tutorialTarget{
+  background:#fff7ed;
+  border:1px solid #fed7aa;
+  color:#9a3412;
+  border-radius:14px;
+  padding:9px 10px;
+  font-weight:900;
+  margin:10px 0;
+}
+.tutorialDots{
+  display:flex;
+  justify-content:center;
+  gap:6px;
+  margin:12px 0 14px;
+}
+.tutorialDots span{
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  background:#bae6fd;
+}
+.tutorialDots span.on{
+  background:#0284c7;
+  width:22px;
+}
+.tutorialSkip{
+  width:100%;
+  margin-top:10px;
+}
+.tutorialPointer{
+  position:fixed;
+  top:12px;
+  left:12px;
+  right:12px;
+  background:#075985;
+  color:#fff;
+  padding:10px 12px;
+  border-radius:14px;
+  font-weight:900;
+  text-align:center;
+  pointer-events:none;
+  box-shadow:0 8px 20px rgba(8,47,73,.25);
+}
+
+
+/* Sprint6.2: non-blocking tutorial */
+.tutorialOverlay,
+.tutorialBackdrop{
+  pointer-events:none !important;
+  background:transparent !important;
+}
+.tutorialFloating{
+  position:fixed;
+  left:12px;
+  right:12px;
+  bottom:84px;
+  z-index:13000;
+  background:#ffffff;
+  border:2px solid #0ea5e9;
+  border-radius:20px;
+  padding:14px;
+  box-shadow:0 12px 28px rgba(8,47,73,.25);
+  pointer-events:auto;
+}
+.tutorialFloating h2{
+  margin:10px 0 6px;
+  color:#075985;
+  font-size:18px;
+}
+.tutorialFloating p{
+  color:#083344;
+  line-height:1.55;
+  font-weight:700;
+  margin:0 0 8px;
+}
+.tutorialFloating .primary,
+.tutorialFloating .secondary{
+  margin-top:0;
+}
+.tutorialPointer{
+  display:none !important;
+}
+@media (max-height:700px){
+  .tutorialFloating{
+    max-height:48vh;
+    overflow:auto;
+  }
+}
+
+
+/* Sprint6.3: truly interactive practice tutorial */
+.tutorialOverlay,
+.tutorialBackdrop{
+  display:none !important;
+  pointer-events:none !important;
+}
+.tutorialFloatingCard{
+  position:fixed;
+  left:10px;
+  right:10px;
+  bottom:76px;
+  z-index:13000;
+  background:#fff;
+  border:2px solid #0ea5e9;
+  border-radius:20px;
+  padding:13px;
+  box-shadow:0 12px 28px rgba(8,47,73,.24);
+  pointer-events:auto;
+}
+.tutorialFloatingCard h2{
+  margin:8px 0 6px;
+  color:#075985;
+  font-size:17px;
+}
+.tutorialFloatingCard p{
+  color:#083344;
+  line-height:1.5;
+  font-weight:700;
+  margin:0 0 8px;
+}
+.tutorialFloatingCard .primary,
+.tutorialFloatingCard .secondary{
+  margin-top:0;
+}
+.tutorialMiniButtons{
+  display:flex;
+  gap:6px;
+}
+.tutorialPill{
+  position:fixed;
+  right:12px;
+  bottom:86px;
+  z-index:13000;
+  border:0;
+  background:#075985;
+  color:#fff;
+  border-radius:999px;
+  padding:10px 14px;
+  font-weight:900;
+  box-shadow:0 8px 18px rgba(8,47,73,.25);
+}
+.tutorialPointer{
+  display:none !important;
+}
+@media (max-height:700px){
+  .tutorialFloatingCard{
+    max-height:42vh;
+    overflow:auto;
+  }
+}
+
+
+.demoBanner{
+  display:inline-block;
+  margin-top:8px;
+  background:#fff7ed;
+  color:#9a3412;
+  border:1px solid #fed7aa;
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:12px;
+  font-weight:900;
+}
+
+
+.guidedDemoPanel{
+  position:fixed;
+  left:10px;
+  right:10px;
+  bottom:76px;
+  z-index:14000;
+  background:#ffffff;
+  border:2px solid #f97316;
+  border-radius:20px;
+  padding:14px;
+  box-shadow:0 14px 30px rgba(124,45,18,.25);
+}
+.guidedTop{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+.guidedBadge{
+  display:inline-block;
+  background:#fff7ed;
+  color:#9a3412;
+  border:1px solid #fed7aa;
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:12px;
+  font-weight:900;
+}
+.guidedDemoPanel h2{
+  color:#9a3412;
+  margin:10px 0 6px;
+  font-size:18px;
+}
+.guidedDemoPanel p{
+  color:#431407;
+  line-height:1.55;
+  font-weight:700;
+  margin:0 0 8px;
+}
+.guidedTarget{
+  background:#e0f7ff;
+  border:1px solid #7dd3fc;
+  color:#075985;
+  border-radius:14px;
+  padding:9px 10px;
+  font-weight:900;
+  margin:10px 0;
+}
+.guidedProgress{
+  height:8px;
+  background:#ffedd5;
+  border-radius:999px;
+  overflow:hidden;
+  margin:10px 0 12px;
+}
+.guidedProgress div{
+  height:100%;
+  background:#f97316;
+  border-radius:999px;
+}
+.guidedDemoPanel .primary,
+.guidedDemoPanel .secondary{
+  margin-top:0;
+}
+@media (max-height:700px){
+  .guidedDemoPanel{
+    max-height:46vh;
+    overflow:auto;
+  }
+}
+
+
+/* Sprint6.6 demo usability */
+.guidedDemoPanel.improved{
+  bottom:74px;
+  padding:12px;
+  max-height:54vh;
+  overflow:auto;
+}
+.guidedDemoPanel.improved h2{
+  font-size:17px;
+  margin:8px 0 5px;
+}
+.guidedDemoPanel.improved p{
+  font-size:13px;
+  line-height:1.45;
+}
+.guidedMiniButtons{
+  display:flex;
+  gap:6px;
+}
+.demoQuickActions{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:8px;
+  margin:10px 0;
+}
+.demoQuickActions button{
+  border:1px solid #fed7aa;
+  background:#fff7ed;
+  color:#9a3412;
+  border-radius:12px;
+  padding:9px 6px;
+  font-weight:900;
+  font-size:13px;
+}
+.guidedPill{
+  position:fixed;
+  right:12px;
+  bottom:86px;
+  z-index:14000;
+  border:0;
+  background:#f97316;
+  color:#fff;
+  border-radius:999px;
+  padding:10px 14px;
+  font-weight:900;
+  box-shadow:0 8px 18px rgba(124,45,18,.25);
+}
+.demoMiniControls{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-top:8px;
+}
+.demoMiniControls button{
+  border:0;
+  background:#075985;
+  color:#fff;
+  border-radius:999px;
+  padding:7px 10px;
+  font-size:12px;
+  font-weight:900;
+}
+
+
+.timeSelectRow{
+  display:grid;
+  grid-template-columns:1fr 72px 72px;
+  gap:8px;
+  align-items:center;
+}
+.timeSelectRow select{
+  font-size:16px;
+  height:44px;
+}
+.timeMini{
+  margin-top:0;
+  height:44px;
+  padding:8px 6px;
+  font-size:13px;
+  font-weight:900;
+}
+
+
+.routeNameOnlyList{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+  margin-top:7px;
+}
+.routeNameOnlyList span{
+  background:#ffffff;
+  border:1px solid #bae6fd;
+  color:#075985;
+  border-radius:999px;
+  padding:4px 8px;
+  font-size:12px;
+  font-weight:900;
+  line-height:1.2;
+}
+.routeItem{
+  align-items:flex-start;
+}
+
+
+.appHeader{
+  background:linear-gradient(135deg,#e0fbff,#ffffff);
+  border:1px solid #bae6fd;
+  border-radius:24px;
+  padding:16px;
+  box-shadow:0 6px 18px rgba(14,165,233,.12);
+}
+.brandHeader{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.headerAppIcon{
+  width:52px;
+  height:52px;
+  border-radius:15px;
+  box-shadow:0 6px 14px rgba(8,47,73,.18);
+  flex:0 0 auto;
+}
+.brandHeader h1{
+  margin:0;
+  font-size:30px;
+  line-height:1;
+  color:#075985;
+  letter-spacing:.02em;
+}
+@media (max-width:380px){
+  .headerAppIcon{
+    width:46px;
+    height:46px;
+    border-radius:13px;
+  }
+  .brandHeader h1{
+    font-size:26px;
+  }
+}
+
+
+.careManagerBox,
+.patientInfoBox{
+  background:#f0f9ff;
+  border:1px solid #bae6fd;
+  border-radius:16px;
+  padding:12px;
+  margin:12px 0;
+}
+.careManagerBox h3,
+.patientInfoBox h3{
+  margin:0 0 8px;
+  color:#075985;
+}
+.phoneInputRow{
+  display:grid;
+  grid-template-columns:1fr 82px;
+  gap:8px;
+  align-items:center;
+}
+.phoneMini{
+  margin-top:0;
+  height:44px;
+  padding:8px 6px;
+  font-weight:900;
+}
+.infoLine{
+  display:grid;
+  grid-template-columns:86px 1fr;
+  gap:8px;
+  padding:6px 0;
+  border-bottom:1px solid #dbeafe;
+}
+.infoLine:last-of-type{
+  border-bottom:0;
+}
+.infoLine span{
+  color:#477082;
+  font-weight:900;
+  font-size:13px;
+}
+.infoLine b{
+  color:#083344;
+  font-size:14px;
+}
+
+
+.patientSaveNotice{
+  font-size:12px;
+  color:#075985;
+  font-weight:900;
+}
+
+
+.canceledCard{
+  background:#f8fafc!important;
+  opacity:.82;
+}
+.canceledCard .compactPatient{
+  color:#64748b;
+  text-decoration:line-through;
+}
+.nonCountCard{
+  border-left-color:#94a3b8!important;
+}
+.cancelPatientBtn{
+  border:1px solid #cbd5e1;
+  background:#f8fafc;
+  color:#475569;
+  border-radius:999px;
+  padding:8px 10px;
+  font-weight:900;
+  font-size:13px;
+}
+.cancelPatientBtn.on{
+  background:#fee2e2;
+  border-color:#fb7185;
+  color:#be123c;
+}
+.nonCountBadge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  height:22px;
+  border-radius:999px;
+  background:#f1f5f9;
+  border:1px solid #cbd5e1;
+  color:#475569;
+  font-size:12px;
+  font-weight:900;
+  padding:0 8px;
+  margin-right:6px;
+}
+.cancelReasonBox{
+  background:#fff1f2;
+  border:1px solid #fecdd3;
+  border-radius:14px;
+  padding:10px;
+  margin-top:10px;
+}
+.cancelReasonBox label{
+  color:#be123c;
+}
+
+
+.photoExtractBox{
+  background:#ecfeff;
+  border:1px solid #67e8f9;
+  border-radius:16px;
+  padding:12px;
+  margin:12px 0;
+}
+.photoExtractBox h3{
+  margin:0 0 6px;
+  color:#0e7490;
+}
+.photoUploadButton{
+  display:block;
+  text-align:center;
+  background:#0891b2;
+  color:#fff;
+  border-radius:14px;
+  padding:12px;
+  font-weight:900;
+  margin-top:10px;
+}
+.photoUploadButton input{
+  display:none;
+}
+
+
+.photoUploadGrid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+  margin-top:10px;
+}
+.photoUploadGrid .photoUploadButton{
+  margin-top:0;
+}
+
+
+.versionBadge{
+  display:inline-block;
+  background:#dcfce7;
+  color:#166534;
+  border:1px solid #86efac;
+  border-radius:999px;
+  padding:3px 7px;
+  font-size:11px;
+  font-weight:900;
+  vertical-align:middle;
+}
+
+
+.easyHome{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.easyHero{
+  background:linear-gradient(135deg,#e0fbff,#ffffff);
+  border:1px solid #bae6fd;
+  border-radius:24px;
+  padding:18px;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  box-shadow:0 6px 18px rgba(14,165,233,.12);
+}
+.easyHero h2{
+  margin:4px 0;
+  color:#075985;
+  font-size:28px;
+}
+.easyLabel{
+  color:#0284c7;
+  font-weight:900;
+  font-size:12px;
+  letter-spacing:.08em;
+}
+.easyStats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
+.easyStats div{
+  background:#fff;
+  border:1px solid #dbeafe;
+  border-radius:18px;
+  padding:12px;
+  text-align:center;
+}
+.easyStats b{
+  display:block;
+  color:#075985;
+  font-size:28px;
+}
+.easyStats span{
+  color:#477082;
+  font-size:12px;
+  font-weight:900;
+}
+.nextVisitBox{
+  background:#075985;
+  color:#fff;
+  border-radius:24px;
+  padding:18px;
+  margin-top:12px;
+  box-shadow:0 8px 20px rgba(8,47,73,.18);
+}
+.nextVisitBox .easyLabel,
+.nextVisitBox .small{
+  color:#dff7ff;
+}
+.nextVisitBox h3{
+  margin:8px 0;
+  color:#fff;
+  font-size:22px;
+}
+.nextNames{
+  font-weight:900;
+  margin:8px 0 14px;
+}
+.bigAction{
+  width:100%;
+  min-height:54px;
+  font-size:17px;
+}
+.easyActions{
+  display:grid;
+  gap:10px;
+  margin-top:12px;
+}
+.easyAction{
+  background:#fff;
+  border:1px solid #dbeafe;
+  border-radius:22px;
+  padding:16px;
+  display:grid;
+  grid-template-columns:52px 1fr;
+  grid-template-rows:auto auto;
+  column-gap:12px;
+  text-align:left;
+  box-shadow:0 5px 14px rgba(8,47,73,.08);
+}
+.easyAction span{
+  grid-row:1/3;
+  width:52px;
+  height:52px;
+  border-radius:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#e0f7ff;
+  font-size:27px;
+}
+.easyAction b{
+  color:#083344;
+  font-size:17px;
+}
+.easyAction small{
+  color:#477082;
+  font-weight:800;
+}
+.primaryEasy{
+  border-color:#7dd3fc;
+  background:#f0fbff;
+}
+.advancedMenu{
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:18px;
+  padding:12px;
+  margin-top:12px;
+}
+.advancedMenu summary{
+  color:#475569;
+  font-weight:900;
+}
+.sectionTitleRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-top:14px;
+}
+.sectionTitleRow h3{
+  margin:0;
+  color:#075985;
+}
+
+
+.routeOnlyPage{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.routeOnlyHeader{
+  background:linear-gradient(135deg,#f0fbff,#ffffff);
+  border:1px solid #bae6fd;
+  border-radius:24px;
+  padding:18px;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+}
+.routeOnlyHeader h2{
+  margin:4px 0;
+  color:#075985;
+  font-size:30px;
+}
+.routeOne span{
+  background:#dbeafe!important;
+  color:#1d4ed8;
+  font-weight:900;
+}
+.routeTwo span{
+  background:#dcfce7!important;
+  color:#166534;
+  font-weight:900;
+}
+.routeNextBox{
+  margin-top:0;
+}
+.bottom{
+  grid-template-columns:repeat(7,1fr);
+}
+.bottom button{
+  font-size:11px;
+}
+@media (max-width:420px){
+  .bottom button{
+    font-size:10px;
+    padding:7px 2px;
+  }
+}
+
+
+.calendarRouteSplitPage{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.calendarRouteGrid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:16px;
+}
+.calendarRouteColumn{
+  border:1px solid #dbeafe;
+  border-radius:20px;
+  padding:12px;
+  background:#fff;
+}
+.route1Column{
+  border-left:5px solid #3b82f6;
+}
+.route2Column{
+  border-left:5px solid #22c55e;
+}
+.routeColumnHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:8px;
+}
+.routeColumnHeader h3{
+  margin:0;
+  color:#075985;
+  font-size:20px;
+}
+.routeColumnHeader span{
+  background:#e0f7ff;
+  color:#075985;
+  border-radius:999px;
+  padding:5px 10px;
+  font-weight:900;
+  font-size:13px;
+}
+.miniRouteBadge{
+  display:inline-block;
+  border-radius:999px;
+  padding:1px 5px;
+  margin-right:4px;
+  font-size:10px;
+  font-weight:900;
+}
+.miniRouteBadge.r1{
+  background:#dbeafe;
+  color:#1d4ed8;
+}
+.miniRouteBadge.r2{
+  background:#dcfce7;
+  color:#166534;
+}
+@media (min-width:760px){
+  .calendarRouteGrid{
+    grid-template-columns:1fr 1fr;
+  }
+}
+
+/* Sprint8.4 明日もルート分離 */
+
+
+/* Sprint8.5 ルート色分け・独立管理 */
+.routeCard1{
+  border-left:6px solid #3b82f6!important;
+}
+.routeCard2{
+  border-left:6px solid #22c55e!important;
+}
+.routeCard1 .routeNoBadge{
+  background:#dbeafe;
+  border-color:#93c5fd;
+  color:#1d4ed8;
+}
+.routeCard2 .routeNoBadge{
+  background:#dcfce7;
+  border-color:#86efac;
+  color:#166534;
+}
+.routeItem1{
+  border-left:6px solid #3b82f6!important;
+  background:linear-gradient(90deg,#eff6ff,#ffffff)!important;
+}
+.routeItem2{
+  border-left:6px solid #22c55e!important;
+  background:linear-gradient(90deg,#f0fdf4,#ffffff)!important;
+}
+.routeOnly1 .routeOnlyHeader,
+.route1Column .routeColumnHeader{
+  background:linear-gradient(135deg,#eff6ff,#ffffff);
+}
+.routeOnly2 .routeOnlyHeader,
+.route2Column .routeColumnHeader{
+  background:linear-gradient(135deg,#f0fdf4,#ffffff);
+}
+.routeOnly1 .routeOnlyHeader{
+  border-left:7px solid #3b82f6;
+}
+.routeOnly2 .routeOnlyHeader{
+  border-left:7px solid #22c55e;
+}
+.routeOne{
+  border-color:#93c5fd!important;
+  background:#eff6ff!important;
+}
+.routeTwo{
+  border-color:#86efac!important;
+  background:#f0fdf4!important;
+}
+.route1Column{
+  background:linear-gradient(180deg,#eff6ff,#ffffff);
+}
+.route2Column{
+  background:linear-gradient(180deg,#f0fdf4,#ffffff);
+}
+.calendarRouteColumn .routeBox{
+  background:#fff;
+}
+
+
+.routePageLink{
+  display:block;
+  text-align:center;
+  border-radius:16px;
+  padding:10px;
+  font-weight:900;
+  text-decoration:none;
+  margin-top:-4px;
+}
+.routePageLink1{
+  background:#dbeafe;
+  color:#1d4ed8;
+  border:1px solid #93c5fd;
+}
+.routePageLink2{
+  background:#dcfce7;
+  color:#166534;
+  border:1px solid #86efac;
+}
+
+
+.routeQuickSwitch{
+  position:sticky;
+  top:0;
+  z-index:20;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  background:rgba(240,251,255,.92);
+  backdrop-filter:blur(8px);
+  padding:8px 0;
+}
+.routeQuickSwitch button{
+  border-radius:16px;
+  padding:11px 8px;
+  font-weight:900;
+  border:2px solid transparent;
+  background:#fff;
+  color:#075985;
+  box-shadow:0 4px 10px rgba(8,47,73,.08);
+}
+.routeQuickSwitch button b{
+  font-size:18px;
+}
+.routeQuickSwitch .r1{
+  border-color:#93c5fd;
+}
+.routeQuickSwitch .r2{
+  border-color:#86efac;
+}
+.routeQuickSwitch .on.r1{
+  background:#dbeafe;
+  color:#1d4ed8;
+}
+.routeQuickSwitch .on.r2{
+  background:#dcfce7;
+  color:#166534;
+}
+.activeCalendarRoute{
+  margin-top:4px;
+}
+
+
+.modalBackdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(8,47,73,.35);
+  z-index:20000;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  padding:16px;
+}
+.cancelModalBox{
+  width:100%;
+  max-width:460px;
+  background:#fff;
+  border-radius:24px;
+  padding:18px;
+  box-shadow:0 18px 40px rgba(8,47,73,.28);
+  border:1px solid #bae6fd;
+}
+.cancelModalBox h2{
+  margin:0 0 6px;
+  color:#075985;
+}
+.cancelReasonGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin:14px 0;
+}
+.cancelReasonGrid button{
+  min-height:50px;
+  font-weight:900;
+}
+
+
+/* Sprint9.0 訪問完了シート */
+.visitSheet{background:#f8fafc;border:1px solid #e2e8f0;border-radius:22px;padding:12px;margin:12px 0;}
+.emptySheet{color:#64748b;font-weight:900;text-align:center;}
+.visitSheetHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.visitSheetHeader h2{margin:2px 0 0;color:#075985;}
+.nextFacilityBanner{background:#e0f7ff;border:1px solid #7dd3fc;color:#075985;border-radius:16px;padding:10px;font-weight:900;margin-bottom:10px;}
+.facilitySheet{background:#fff;border:1px solid #dbeafe;border-radius:18px;padding:12px;margin:10px 0;border-left:6px solid #0ea5e9;}
+.facilitySheet.sheetDone{opacity:.62;background:#f1f5f9;border-left-color:#94a3b8;}
+.facilitySheetTop{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;cursor:pointer;}
+.facilitySheetTop b{color:#083344;}
+.patientChecklist{display:flex;flex-direction:column;gap:8px;margin:10px 0;}
+.checkRow{display:grid;grid-template-columns:1fr;gap:6px;border:1px solid #e2e8f0;border-radius:14px;padding:9px;background:#fff;}
+.checkRow.done{background:#ecfdf5;border-color:#bbf7d0;}
+.checkRow.canceled{background:#f8fafc;color:#64748b;}
+.checkRow.nonCount{background:#f1f5f9;}
+.checkMain{border:0;background:transparent;display:flex;align-items:center;gap:8px;text-align:left;padding:0;font-weight:900;}
+.checkMain span{width:28px;height:28px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;background:#e0f7ff;color:#075985;font-weight:900;}
+.checkRow.done .checkMain span{background:#16a34a;color:white;}
+.checkRow.canceled .checkMain span{background:#fee2e2;color:#be123c;}
+.checkTreatment{color:#477082;font-size:13px;font-weight:800;padding-left:36px;}
+.checkTreatment em{margin-left:6px;background:#e2e8f0;color:#475569;border-radius:999px;padding:2px 6px;font-style:normal;font-size:11px;}
+.checkActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.fullDoneBtn{width:100%;}
+
+/* Sprint9.2 完了カードの色被り完全修正 */
+.checkRow.done,.patientChecklist .checkRow.done,.facilitySheet .checkRow.done{
+background:#fff!important;border:2px solid #16a34a!important;color:#083344!important;opacity:1!important}
+.checkRow.done *{opacity:1!important}
+.checkRow.done .checkMain b,.checkRow.done .checkTreatment{color:#083344!important}
+.checkRow.done .checkMain span{background:#16a34a!important;color:#fff!important}
+.facilitySheet.sheetDone{background:#fff!important;border-left:6px solid #16a34a!important;opacity:1!important}
+
+
+/* Sprint10.0 施設別FAX設定 */
+.faxSettingBox{
+  background:#f8fafc;
+  border:1px solid #dbeafe;
+  border-radius:16px;
+  padding:12px;
+  margin:12px 0;
+}
+.faxSettingBox h3{
+  margin:0 0 8px;
+  color:#075985;
+}
+.faxButtons{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin:10px 0;
+}
+.faxButtons button{
+  margin:0;
+  padding:9px 4px;
+  font-size:12px;
+  font-weight:900;
+}
+
+
+/* Sprint10.1 敬称表示 */
+.faxAddressName{
+  color:#075985;
+  font-weight:900;
+}
+
+
+/* Sprint10.2 明日FAX・大きめ予定表 */
+.faxButtons5{
+  grid-template-columns:repeat(5,1fr);
+}
+@media (max-width:520px){
+  .faxButtons5{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+
+/* Sprint11.2 予定画面UI安全改善（現場モードなし） */
+.stickyNextVisit{
+  position:sticky;
+  top:0;
+  z-index:50;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  background:rgba(224,247,255,.94);
+  backdrop-filter:blur(8px);
+  border:1px solid #7dd3fc;
+  border-radius:18px;
+  padding:10px 12px;
+  margin:8px 0 12px;
+  box-shadow:0 6px 16px rgba(8,47,73,.12);
+}
+.stickyNextVisit span{
+  display:block;
+  color:#0369a1;
+  font-size:12px;
+  font-weight:900;
+}
+.stickyNextVisit b{
+  display:block;
+  color:#083344;
+  font-size:16px;
+}
+.compactCard{
+  border-radius:22px!important;
+  padding:16px!important;
+  margin:12px 0!important;
+}
+.compactTop{
+  align-items:flex-start!important;
+  gap:12px!important;
+}
+.compactTime{
+  font-size:15px!important;
+  color:#075985!important;
+  font-weight:900!important;
+}
+.compactPatient{
+  font-size:24px!important;
+  line-height:1.25!important;
+  color:#083344!important;
+  font-weight:900!important;
+  margin:5px 0!important;
+}
+.compactMeta{
+  font-size:14px!important;
+  color:#334155!important;
+  font-weight:800!important;
+}
+.compactActions{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:8px!important;
+  min-width:92px!important;
+}
+.circleDone,
+.nextAlways,
+.cancelPatientBtn{
+  min-height:44px!important;
+  border-radius:14px!important;
+  font-size:14px!important;
+  font-weight:900!important;
+}
+.circleDone{
+  width:100%!important;
+}
+.circleDone.on{
+  background:#16a34a!important;
+  color:#fff!important;
+}
+.nextAlways{
+  background:#e0f7ff!important;
+  color:#075985!important;
+  border:1px solid #7dd3fc!important;
+}
+.compactDetails summary{
+  font-size:15px!important;
+  font-weight:900!important;
+  color:#075985!important;
+  padding:10px 0!important;
+}
+.detailGrid button,
+.phoneBox button{
+  min-height:44px!important;
+  border-radius:14px!important;
+  font-weight:900!important;
+}
+.completed,
+.completed *{
+  opacity:1!important;
+  filter:none!important;
+}
+.item.compactCard.completed,
+.compactCard.completed{
+  background:#ffffff!important;
+  border:2px solid #16a34a!important;
+}
+.compactCard.completed .compactPatient,
+.compactCard.completed .compactMeta,
+.compactCard.completed .compactTime{
+  color:#083344!important;
+}
+
+
+/* Sprint11.3 対象位置への自動移動・ハイライト */
+.flashTarget{
+  animation:frontierFlashTarget 2.2s ease-in-out 1!important;
+  outline:3px solid #38bdf8!important;
+  outline-offset:3px!important;
+}
+@keyframes frontierFlashTarget{
+  0%{box-shadow:0 0 0 0 rgba(14,165,233,.0);background-color:#e0f7ff}
+  20%{box-shadow:0 0 0 8px rgba(14,165,233,.24);background-color:#e0f7ff}
+  70%{box-shadow:0 0 0 8px rgba(14,165,233,.12);background-color:#f0fbff}
+  100%{box-shadow:0 0 0 0 rgba(14,165,233,.0)}
+}
+#schedule-form.flashTarget{
+  border-radius:18px;
+  padding-top:8px;
+}
+
+
+/* Sprint11.5 処置内容マスタ */
+.treatmentMasterBox{
+  background:#f8fafc;
+  border:1px solid #dbeafe;
+  border-radius:16px;
+  padding:12px;
+  margin:10px 0 14px;
+}
+.treatmentMasterBox summary{
+  font-weight:900;
+  color:#075985;
+  cursor:pointer;
+}
+.treatmentAddRow{
+  display:grid;
+  grid-template-columns:1fr 82px;
+  gap:8px;
+  margin:10px 0;
+}
+.treatmentAddRow input{
+  margin:0;
+}
+.treatmentChipList{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:10px 0;
+}
+.treatmentChip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:#e0f7ff;
+  color:#075985;
+  border:1px solid #7dd3fc;
+  border-radius:999px;
+  padding:6px 8px 6px 10px;
+  font-weight:900;
+  font-size:13px;
+}
+.treatmentChip button{
+  width:22px;
+  height:22px;
+  border-radius:999px;
+  border:0;
+  background:#fff;
+  color:#075985;
+  font-weight:900;
+}
+
+
+/* Sprint12.0 管理者モード */
+.adminGate{
+  background:#fff;
+  border:1px solid #dbeafe;
+  border-radius:24px;
+  padding:18px;
+}
+.adminGate h2{
+  color:#075985;
+  margin-top:0;
+}
+.adminPage{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.adminHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:linear-gradient(135deg,#eff6ff,#fff);
+  border:1px solid #bfdbfe;
+  border-radius:24px;
+  padding:16px;
+}
+.adminHeader h2{
+  margin:0;
+  color:#075985;
+}
+.adminMenu{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:8px;
+}
+.adminMenu button{
+  background:#f8fafc;
+  border:1px solid #dbeafe;
+  border-radius:16px;
+  padding:12px 8px;
+  font-weight:900;
+  color:#075985;
+}
+.adminStats{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:8px;
+}
+.adminStats div{
+  background:#fff;
+  border:1px solid #e2e8f0;
+  border-radius:18px;
+  padding:14px;
+  text-align:center;
+}
+.adminStats b{
+  display:block;
+  font-size:28px;
+  color:#083344;
+}
+.adminStats span{
+  color:#64748b;
+  font-size:12px;
+  font-weight:900;
+}
+.adminCard{
+  background:#fff;
+  border:1px solid #e2e8f0;
+  border-radius:20px;
+  padding:16px;
+}
+.adminCard h3{
+  margin-top:0;
+  color:#075985;
+}
+.billingRows{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin:10px 0;
+}
+.billingRows div{
+  display:flex;
+  justify-content:space-between;
+  background:#f8fafc;
+  border-radius:14px;
+  padding:10px;
+  font-weight:900;
+}
+.billingRows b{
+  color:#075985;
+}
+@media (min-width:680px){
+  .adminStats{grid-template-columns:repeat(3,1fr);}
+  .adminMenu{grid-template-columns:repeat(3,1fr);}
+}
+
+
+/* Sprint12.1 管理者PINキーボード修正 */
+#admin-pin-input,
+#admin-pin-change-input{
+  font-size:18px!important;
+  min-height:48px!important;
+}
+
+
+/* Sprint12.2 FAX今月分 */
+.faxButtons6{
+  grid-template-columns:repeat(3,1fr);
+}
+@media (max-width:520px){
+  .faxButtons6{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+
+/* Sprint12.3 施設/居宅2択 */
+.segmentedChoice{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin:8px 0 12px;
+}
+.segmentedChoice button{
+  border:1px solid #bae6fd;
+  background:#fff;
+  color:#075985;
+  border-radius:16px;
+  padding:12px;
+  font-weight:900;
+}
+.segmentedChoice button.on{
+  background:#075985;
+  color:#fff;
+  border-color:#075985;
+}
+
+
+/* Sprint12.4 管理画面・請求基盤 */
+.adminPage{display:flex;flex-direction:column;gap:14px}
+.adminHeader{display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#eff6ff,#fff);border:1px solid #bfdbfe;border-radius:24px;padding:16px}
+.adminHeader h2{margin:0;color:#075985}
+.adminStats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.adminStats div{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:14px;text-align:center}
+.adminStats b{display:block;font-size:22px;color:#083344;word-break:break-word}
+.adminStats span{color:#64748b;font-size:12px;font-weight:900}
+.adminCard{background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:16px}
+.adminCard h3{margin-top:0;color:#075985}
+.priceGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.priceGrid label{font-weight:900;color:#075985}
+.priceGrid input{margin-top:4px}
+.billingRows{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.billingRows div{display:flex;justify-content:space-between;background:#f8fafc;border-radius:14px;padding:10px;font-weight:900}
+.billingRows b{color:#075985}
+@media (min-width:680px){.adminStats{grid-template-columns:repeat(3,1fr)}}
+\n
+/* Sprint12.5 請求書日別明細 */
+.dailyPreviewBox{
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:16px;
+  padding:12px;
+  margin:12px 0;
+}
+.dailyPreviewBox h4{
+  margin:0 0 8px;
+  color:#075985;
+}
+.dailyPreviewRow{
+  display:grid;
+  grid-template-columns:52px 1fr auto;
+  gap:8px;
+  align-items:start;
+  border-bottom:1px solid #e2e8f0;
+  padding:8px 0;
+  font-size:13px;
+}
+.dailyPreviewRow:last-child{
+  border-bottom:0;
+}
+.dailyPreviewRow b{
+  color:#083344;
+}
+.dailyPreviewRow span{
+  color:#334155;
+  font-weight:800;
+}
+.dailyPreviewRow strong{
+  color:#075985;
+  font-weight:900;
+}
+
+/* Sprint12.6 ①/② 個別設定 */
+.billingTypeList{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.billingTypeRow{display:grid;grid-template-columns:1fr 110px;gap:8px;align-items:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:10px}
+.billingTypeRow.home{background:#fff7ed;border-color:#fed7aa}
+.billingTypeRow b{color:#083344;font-size:14px}.billingTypeRow select{margin:0;min-height:40px}
+
+.operationRuleBox{
+ background:#f0fdf4;
+ border:1px solid #bbf7d0;
+ border-radius:14px;
+ padding:10px;
+ color:#14532d;
+ font-size:13px;
+}
