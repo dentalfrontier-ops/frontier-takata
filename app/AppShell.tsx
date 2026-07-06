@@ -42,7 +42,7 @@ const defaultTreatments=[
 ];
 const emptyPatient:Patient={id:'',facility_id:'',name:'',kana:'',room:'',patient_address:'',key_person:'',key_person_address:'',relationship:'',phone:'',care_manager:'',care_manager_company:'',care_manager_phone:'',payment:'',visit_frequency:'',call_before_visit:false,family_attendance:false,free_checkup:false,memo:''};
 
-const FRONTIER_VERSION='TAKATA Ver.1.0 医院ログイン対応';
+const FRONTIER_VERSION=`${CLINIC_CONFIG.shortName} Ver.1.0`;
 const FRONTIER_BUILD='2026-07-05';
 
 export default function Page(){
@@ -2097,7 +2097,7 @@ function createFacilityFaxPdf(f:Facility,type?:string){
       <div class="meta"><div>FAX：${f.fax_number||'未登録'}</div><div>作成日：${new Date().getFullYear()}年${new Date().getMonth()+1}月${new Date().getDate()}日</div></div>
       <table><thead><tr><th>日付</th><th>時間</th><th>患者名</th></tr></thead><tbody>${rows}</tbody></table>
       
-      <div class="sender">たかた歯科医院<br/>訪問担当</div>
+      <div class="sender">${CLINIC_CONFIG.shortName}<br/>訪問担当</div>
       <div class="actions"><button class="backBtn" onclick="window.close(); setTimeout(()=>history.back(),100)">← アプリへ戻る</button><button class="printBtn" onclick="window.print()">印刷 / PDF保存</button></div>
     </div>
   </body></html>`;
@@ -2184,10 +2184,10 @@ function createDailyReportPdf(){
   </style></head><body>
     <div class="sheet">
       <div class="top">
-        <div class="clinic">担当医院：　たかた歯科医院　御中</div>
+        <div class="clinic">担当医院：　${CLINIC_CONFIG.reportClinic}</div>
         <h1>診療日報</h1>
         <div class="sign">医師署名</div>
-        <div class="brand">訪問歯科支援センター<br/>フロンティア</div>
+        <div class="brand">${CLINIC_CONFIG.issuerName.replace('訪問歯科支援センター','訪問歯科支援センター<br/>')}</div>
       </div>
       <div class="date">${jpLongDateFromYmd(selectedDate)}</div>
       <table>
@@ -2624,10 +2624,10 @@ function ClinicPortal(){
     if(tab==='clinicPortal')return <ClinicPortal/>;
 return <main className='wrap'>
       <section className='head appHeader'>
-        <div className='brandHeader'><img src='/apple-touch-icon.png' alt='FRONTIER OS｜たかた歯科版' className='headerAppIcon'/><h1>医院専用ログイン</h1></div>
+        <div className='brandHeader'><img src='/apple-touch-icon.png' alt='FRONTIER OS' className='headerAppIcon'/><h1>医院専用ログイン</h1></div>
       </section>
       <section className='card'>
-        <h2>たかた歯科医院　御中</h2>
+        <h2>{CLINIC_CONFIG.reportClinic}</h2>
         <div className='small'>予定確認・日報PDF用の医院専用画面です。請求設定や管理情報は表示されません。</div>
         <input type='password' inputMode='numeric' value={clinicPinInput} onChange={e=>setClinicPinInput(e.target.value)} placeholder='医院用PIN' onKeyDown={e=>{if(e.key==='Enter')unlockClinicPortal()}}/>
         <button className='primary' onClick={unlockClinicPortal}>ログイン</button>
@@ -2803,7 +2803,7 @@ function exportFrontierBackup(){
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
   a.href=url;
-  a.download=`frontier_takata_backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.download=`frontier_${CLINIC_CONFIG.id}_backup_${new Date().toISOString().slice(0,10)}.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -3157,14 +3157,14 @@ function createInvoicePreview(){
     @media print{button{display:none}}
   </style></head><body>
     <div class="issueDate">${new Date().toLocaleDateString("ja-JP")}</div><h1>請　求　書</h1>
-    <div class="invoiceTo">たかた歯科医院　御中</div>
+    <div class="invoiceTo">${CLINIC_CONFIG.invoiceRecipient}</div>
     <div class="invoiceMonth">${billingMonth.replace('-', '年')}月請求書</div>
     <div class="topInfo">
       <div class="billAmount">御請求金額　${yen(b.amount+Math.round(b.amount*0.1))}</div>
       <div class="issuer">
-        <b>訪問歯科支援センターフロンティア</b><br/>
-        福岡県久留米市津福本町266-1<br/>
-        ＴＥＬ：0942-44-2678
+        <b>${CLINIC_CONFIG.issuerName}</b><br/>
+        ${CLINIC_CONFIG.issuerAddress}<br/>
+        ＴＥＬ：${CLINIC_CONFIG.issuerTel}
       </div>
     </div>
 
