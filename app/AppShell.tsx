@@ -2,10 +2,11 @@
 import {useEffect,useMemo,useState} from 'react';
 import {supabase} from './lib/supabase';
 
-type Facility={id:string;name:string;address?:string;phone?:string;latitude?:number;longitude?:number;fax_number?:string;fax_schedule_type?:string};
-type Patient={id:string;created_at?:string;createdAt?:string;facility_id?:string;name:string;kana?:string;room?:string;patient_address?:string;patient_latitude?:number;patient_longitude?:number;key_person?:string;key_person_address?:string;relationship?:string;phone?:string;care_manager?:string;care_manager_company?:string;care_manager_phone?:string;payment?:string;visit_frequency?:string;call_before_visit?:boolean;family_attendance?:boolean;free_checkup?:boolean;memo?:string};
-type Schedule={id:string;facility_id?:string;patient_ids?:string[];patient_names:string[];treatment:string;patient_treatments?:Record<string,string>;completed_patients?:Record<string,boolean>;canceled_patients?:Record<string,boolean>;cancel_reasons?:Record<string,string>;patient_memos?:Record<string,string>;route_no?:number;start_at:string;memo?:string;completed?:boolean};
-type Tab='home'|'today'|'route1'|'route2'|'tomorrow'|'next'|'patients'|'facilities'|'calendar'|'admin'|'adminBilling'|'adminStaff'|'adminFax'|'adminReports'|'adminSettings'|'clinicPortal'|'adminBillingSettings';
+type Clinic={id:string;name:string;shortName:string;color?:string;invoiceRecipient?:string;faxSender?:string;portalPin?:string;portalLoginId?:string;portalPassword?:string;startAddress?:string;startLat?:number;startLng?:number;endAddress?:string;endLat?:number;endLng?:number;memo?:string};
+type Facility={id:string;name:string;address?:string;phone?:string;latitude?:number;longitude?:number;fax_number?:string;fax_schedule_type?:string;clinic_id?:string};
+type Patient={id:string;created_at?:string;createdAt?:string;facility_id?:string;name:string;kana?:string;room?:string;patient_address?:string;patient_latitude?:number;patient_longitude?:number;key_person?:string;key_person_address?:string;relationship?:string;phone?:string;care_manager?:string;care_manager_company?:string;care_manager_phone?:string;payment?:string;visit_frequency?:string;call_before_visit?:boolean;family_attendance?:boolean;free_checkup?:boolean;medical_history?:string;memo?:string;clinic_id?:string};
+type Schedule={id:string;facility_id?:string;patient_ids?:string[];patient_names:string[];treatment:string;patient_treatments?:Record<string,string>;completed_patients?:Record<string,boolean>;canceled_patients?:Record<string,boolean>;cancel_reasons?:Record<string,string>;patient_memos?:Record<string,string>;route_no?:number;start_at:string;memo?:string;completed?:boolean;clinic_id?:string};
+type Tab='home'|'today'|'route1'|'route2'|'tomorrow'|'next'|'patients'|'facilities'|'calendar'|'admin'|'adminBilling'|'adminStaff'|'adminFax'|'adminReports'|'adminAI'|'adminClinics'|'adminSettings'|'clinicPortal'|'adminBillingSettings';
 const defaultTreatments=[
   '口腔ケア',
   '義歯調整',
@@ -40,14 +41,14 @@ const defaultTreatments=[
   '担当者会議',
       'その他'
 ];
-const emptyPatient:Patient={id:'',facility_id:'',name:'',kana:'',room:'',patient_address:'',key_person:'',key_person_address:'',relationship:'',phone:'',care_manager:'',care_manager_company:'',care_manager_phone:'',payment:'',visit_frequency:'',call_before_visit:false,family_attendance:false,free_checkup:false,memo:''};
+const emptyPatient:Patient={id:'',facility_id:'',name:'',kana:'',room:'',patient_address:'',key_person:'',key_person_address:'',relationship:'',phone:'',care_manager:'',care_manager_company:'',care_manager_phone:'',payment:'',visit_frequency:'',call_before_visit:false,family_attendance:false,free_checkup:false,medical_history:'',memo:''};
 
-const FRONTIER_VERSION=`${CLINIC_CONFIG.shortName} Ver.1.0`;
+const FRONTIER_VERSION='FRONTIER OS Ver.3.0.2 医院フィルター修正';
 const FRONTIER_BUILD='2026-07-05';
 
 export default function Page(){
-const [tab,setTab]=useState<Tab>('home'),[facilities,setFacilities]=useState<Facility[]>([]),[patients,setPatients]=useState<Patient[]>([]),[schedules,setSchedules]=useState<Schedule[]>([]),[msg,setMsg]=useState(''),[demoMode,setDemoMode]=useState(false),[guidedDemo,setGuidedDemo]=useState(false),[guidedStep,setGuidedStep]=useState(0),[guidedCollapsed,setGuidedCollapsed]=useState(false),[easyMode,setEasyMode]=useState(true),[calendarActiveRoute,setCalendarActiveRoute]=useState<1|2>(1),[cancelModal,setCancelModal]=useState<{s:Schedule;name:string;index:number}|null>(null),[adminUnlocked,setAdminUnlocked]=useState(false);
-const [clinicUnlocked,setClinicUnlocked]=useState(false),[clinicPinInput,setClinicPinInput]=useState(''),[clinicPortalPin,setClinicPortalPin]=useState('2026');
+const [tab,setTab]=useState<Tab>('home'),[clinics,setClinics]=useState<Clinic[]>([{id:'aloha',name:'アロハ歯科・矯正歯科',shortName:'ALOHA',color:'#0284c7',invoiceRecipient:'アロハ歯科・矯正歯科　御中',faxSender:'アロハ歯科\n訪問担当',portalPin:'2026',portalLoginId:'aloha',portalPassword:'2026'}]),[activeClinicId,setActiveClinicId]=useState('aloha'),[clinicForm,setClinicForm]=useState<Clinic>({id:'',name:'',shortName:'',color:'#0284c7',invoiceRecipient:'',faxSender:'',portalPin:'2026',portalLoginId:'',portalPassword:'',startAddress:'',endAddress:''}),[facilities,setFacilities]=useState<Facility[]>([]),[patients,setPatients]=useState<Patient[]>([]),[schedules,setSchedules]=useState<Schedule[]>([]),[msg,setMsg]=useState(''),[demoMode,setDemoMode]=useState(false),[guidedDemo,setGuidedDemo]=useState(false),[guidedStep,setGuidedStep]=useState(0),[guidedCollapsed,setGuidedCollapsed]=useState(false),[easyMode,setEasyMode]=useState(true),[calendarActiveRoute,setCalendarActiveRoute]=useState<1|2>(1),[routePreview,setRoutePreview]=useState<{routeNo:1|2;ids:string[];baseStart:string}|null>(null),[draggingRouteId,setDraggingRouteId]=useState(''),[cancelModal,setCancelModal]=useState<{s:Schedule;name:string;index:number}|null>(null),[adminUnlocked,setAdminUnlocked]=useState(false);
+const [clinicUnlocked,setClinicUnlocked]=useState(false),[clinicLoginInput,setClinicLoginInput]=useState(''),[clinicPasswordInput,setClinicPasswordInput]=useState(''),[clinicPinInput,setClinicPinInput]=useState(''),[clinicPortalPin,setClinicPortalPin]=useState('2026');
 const [adminUnitPrices,setAdminUnitPrices]=useState({visit1:2500,visit2:3000,ope1:1500,ope2:2000});
 const [newPatientInfoFeePrice,setNewPatientInfoFeePrice]=useState(1000);
 const [newPatientInfoFeeEnabled,setNewPatientInfoFeeEnabled]=useState<Record<string,boolean>>({});
@@ -165,6 +166,15 @@ const [patientForm,setPatientForm]=useState<Patient>(emptyPatient),[showPatientF
 const [facilityName,setFacilityName]=useState(''),[facilityAddress,setFacilityAddress]=useState(''),[facilityPhone,setFacilityPhone]=useState(''),[facilityFax,setFacilityFax]=useState(''),[facilityFaxType,setFacilityFaxType]=useState('monthly'),[facilityLat,setFacilityLat]=useState(''),[facilityLng,setFacilityLng]=useState(''),[editingFacilityId,setEditingFacilityId]=useState(''),[facilitySearch,setFacilitySearch]=useState('');
 useEffect(()=>{
   if(typeof window!=='undefined'){
+    const savedClinics=localStorage.getItem('frontier_clinics');
+    const savedActiveClinic=localStorage.getItem('frontier_active_clinic_id');
+    if(savedClinics){
+      try{
+        const parsed=JSON.parse(savedClinics);
+        if(Array.isArray(parsed)&&parsed.length)setClinics(parsed);
+      }catch{}
+    }
+    if(savedActiveClinic)setActiveClinicId(savedActiveClinic);
     const savedClinicPin=localStorage.getItem('frontier_clinic_portal_pin');
     if(savedClinicPin)setClinicPortalPin(savedClinicPin);
     const saved=localStorage.getItem('frontier_treatments');
@@ -206,6 +216,8 @@ useEffect(()=>{
     else if(path.includes('/admin'))setTab('admin');
   }
 },[]);
+useEffect(()=>{load();},[activeClinicId]);
+useEffect(()=>{if(clinicUnlocked && tab.startsWith('admin'))setTab('home'); if(clinicUnlocked && tab==='clinicPortal')setTab('home');},[clinicUnlocked,tab]);
 function buildDemoData(){
   const today=new Date();
   const tomorrow=new Date();
@@ -259,8 +271,69 @@ async function exitDemoMode(){
   setTab('home');
 }
 
-async function load(){const [fr,pr,sr]=await Promise.all([supabase.from('facilities').select('*').order('name'),supabase.from('patients').select('*').order('created_at',{ascending:false}),supabase.from('schedules').select('*').order('start_at',{ascending:true})]);if(fr.data){setFacilities(fr.data);if(fr.data.length&&!facilityId)setFacilityId(fr.data[0].id)}if(pr.data)setPatients(pr.data);if(sr.data)setSchedules(sr.data as Schedule[])}
-function getFacility(id?:string){return facilities.find(f=>f.id===id)} function getPatient(id?:string){return patients.find(p=>p.id===id)}
+async function load(targetClinicId?:string){
+  const cid=targetClinicId || activeClinicId || 'aloha';
+
+  let [fr,pr,sr]=await Promise.all([
+    supabase.from('facilities').select('*').eq('clinic_id',cid).order('name'),
+    supabase.from('patients').select('*').eq('clinic_id',cid).order('created_at',{ascending:false}),
+    supabase.from('schedules').select('*').eq('clinic_id',cid).order('start_at',{ascending:true})
+  ]);
+
+  // clinic_id追加前のDBでも落ちないようにフォールバック
+  if(fr.error && String(fr.error.message||'').includes('clinic_id')){
+    [fr,pr,sr]=await Promise.all([
+      supabase.from('facilities').select('*').order('name'),
+      supabase.from('patients').select('*').order('created_at',{ascending:false}),
+      supabase.from('schedules').select('*').order('start_at',{ascending:true})
+    ]);
+  }
+
+  const belongs=(x:any)=>(x.clinic_id||'aloha')===cid;
+  const fs=(fr.data||[]).filter(belongs) as Facility[];
+  const ps=(pr.data||[]).filter(belongs) as Patient[];
+  const ss=(sr.data||[]).filter(belongs) as Schedule[];
+
+  setFacilities(fs);
+  setPatients(ps);
+  setSchedules(ss);
+  setFacilityId(prev=>fs.some(f=>f.id===prev)?prev:(fs[0]?.id||''));
+}
+function activeClinic(){return clinics.find(c=>c.id===activeClinicId)||clinics[0]}
+function activeClinicStartCoord(){
+  const c=activeClinic();
+  if(c?.startLat&&c?.startLng)return {lat:Number(c.startLat),lng:Number(c.startLng)};
+  return null;
+}
+function activeClinicEndCoord(){
+  const c=activeClinic();
+  if(c?.endLat&&c?.endLng)return {lat:Number(c.endLat),lng:Number(c.endLng)};
+  return activeClinicStartCoord();
+}
+function saveClinicsLocal(next:Clinic[], activeId=activeClinicId){
+  setClinics(next);
+  if(typeof window!=='undefined')localStorage.setItem('frontier_clinics',JSON.stringify(next));
+  if(activeId){
+    setActiveClinicId(activeId);
+    if(typeof window!=='undefined')localStorage.setItem('frontier_active_clinic_id',activeId);
+  }
+}
+function switchClinic(id:string){
+  saveClinicsLocal(clinics,id);
+  setFacilities([]);
+  setPatients([]);
+  setSchedules([]);
+  setFacilityId('');
+  setSelectedPatientIds([]);
+  setSchedulePatientSearch('');
+  load(id);
+  const c=clinics.find(x=>x.id===id);
+  setMsg(`${c?.name||'医院'} に切り替えました`);
+}
+function safeClinicId(name:string){
+  return (name||'clinic').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || `clinic-${Date.now()}`;
+}
+function getFacility(id?:string){return facilities.find(f=>f.id===id && (f.clinic_id||'aloha')===activeClinicId)} function getPatient(id?:string){return patients.find(p=>p.id===id && (p.clinic_id||'aloha')===activeClinicId)}
 const timeOptions=Array.from({length:57},(_,i)=>{
   const total=7*60+i*15;
   const h=String(Math.floor(total/60)).padStart(2,'0');
@@ -294,7 +367,8 @@ function moveScheduleTime(minutes:number){
 
 function fmt(dt:string){return new Date(dt).toLocaleString('ja-JP',{timeZone:'Asia/Tokyo',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})} function dateOnly(dt:string){return new Date(dt).toLocaleDateString('ja-JP',{timeZone:'Asia/Tokyo',month:'2-digit',day:'2-digit'})} function time(dt:string){return new Date(dt).toLocaleTimeString('ja-JP',{timeZone:'Asia/Tokyo',hour:'2-digit',minute:'2-digit'})}
 function callPhone(phone?:string){if(phone)window.location.href=`tel:${phone.replace(/-/g,'')}`} function openMap(address?:string,name?:string){const q=encodeURIComponent(address||name||'');if(q)window.open(`https://www.google.com/maps/search/?api=1&query=${q}`,'_blank')}
-const sortedSchedules=useMemo(()=>[...schedules].sort((a,b)=>new Date(a.start_at).getTime()-new Date(b.start_at).getTime()),[schedules]);
+const clinicFilteredSchedules=useMemo(()=>schedules.filter(s=>(s.clinic_id||'aloha')===activeClinicId),[schedules,activeClinicId]);
+const sortedSchedules=useMemo(()=>[...clinicFilteredSchedules].sort((a,b)=>new Date(a.start_at).getTime()-new Date(b.start_at).getTime()),[clinicFilteredSchedules]);
 function isSameYmd(a:Date,b:Date){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
 const todaySchedules=useMemo(()=>{const t=new Date();return sortedSchedules.filter(s=>isSameYmd(new Date(s.start_at),t))},[sortedSchedules]);
 const tomorrowSchedules=useMemo(()=>{const t=new Date();t.setDate(t.getDate()+1);return sortedSchedules.filter(s=>isSameYmd(new Date(s.start_at),t))},[sortedSchedules]);
@@ -304,15 +378,231 @@ function cardCount(list:Schedule[]){
 const todayCardCount=cardCount(todaySchedules);
 const tomorrowCardCount=cardCount(tomorrowSchedules);
 const completed=todaySchedules.reduce((sum,s)=>sum+scheduleCompletedCount(s),0), remaining=todayCardCount-completed;
+
+function ymdFromDate(d:Date){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function monthRangeFromYmd(ymd:string){
+  const [y,m]=ymd.split('-').map(Number);
+  return {start:`${y}-${String(m).padStart(2,'0')}-01`, prefix:`${y}-${String(m).padStart(2,'0')}`};
+}
+function weekRangeFromYmd(ymd:string){
+  const d=new Date(ymd+'T00:00:00');
+  const day=d.getDay();
+  const start=new Date(d);
+  start.setDate(d.getDate()-day);
+  const end=new Date(start);
+  end.setDate(start.getDate()+6);
+  return {start:ymdFromDate(start),end:ymdFromDate(end)};
+}
+function isPatientScheduledInSchedule(s:Schedule,p:Patient){
+  return (s.patient_ids||[]).includes(p.id)||(s.patient_names||[]).includes(p.name);
+}
+function isScheduleCountableForPatient(s:Schedule,p:Patient){
+  const names=s.patient_names&&s.patient_names.length?s.patient_names:[''];
+  const idxById=(s.patient_ids||[]).findIndex(id=>id===p.id);
+  const idx=idxById>=0?idxById:names.findIndex(n=>n===p.name);
+  if(idx<0)return false;
+  const name=names[idx]||p.name;
+  return !isPatientCanceled(s,name,idx)&&isCountTarget(s,name,idx);
+}
+function patientMonthCount(p:Patient,ymd=scheduleDatePart()){
+  const prefix=monthRangeFromYmd(ymd).prefix;
+  return schedules.filter(s=>String(s.start_at||'').startsWith(prefix)&&isPatientScheduledInSchedule(s,p)&&isScheduleCountableForPatient(s,p)).length;
+}
+function patientWeekCount(p:Patient,ymd=scheduleDatePart()){
+  const range=weekRangeFromYmd(ymd);
+  return schedules.filter(s=>{
+    const day=String(s.start_at||'').slice(0,10);
+    return day>=range.start&&day<=range.end&&isPatientScheduledInSchedule(s,p)&&isScheduleCountableForPatient(s,p);
+  }).length;
+}
+function targetMonthlyCount(p:Patient){
+  const f=p.visit_frequency||'';
+  if(f==='毎週')return 4;
+  if(f==='隔週'||f==='月2')return 2;
+  if(f==='月1')return 1;
+  return 0;
+}
+function priorityPatientsByScheduleNeed(list:Patient[]){
+  return [...list].sort((a,b)=>{
+    const aw=patientWeekCount(a), bw=patientWeekCount(b);
+    if(aw===0 && bw>0)return -1;
+    if(bw===0 && aw>0)return 1;
+    const at=targetMonthlyCount(a), bt=targetMonthlyCount(b);
+    const an=at?patientMonthCount(a)/at:999;
+    const bn=bt?patientMonthCount(b)/bt:999;
+    if(an!==bn)return an-bn;
+    return (a.kana||a.name||'').localeCompare(b.kana||b.name||'','ja');
+  });
+}
+function patientScheduleStatusLabel(p:Patient){
+  const m=patientMonthCount(p);
+  const w=patientWeekCount(p);
+  const target=targetMonthlyCount(p);
+  const targetText=target?` / 目安${target}回`:'';
+  return `今月${m}回${targetText}・今週${w}回`;
+}
+function missedSchedulePatientsForMonth(ymd=scheduleDatePart()){
+  return patients.filter(p=>{
+    const target=targetMonthlyCount(p);
+    if(!target)return false;
+    return patientMonthCount(p,ymd)<target;
+  }).sort((a,b)=>patientMonthCount(a,ymd)-patientMonthCount(b,ymd));
+}
+
+function lastScheduleForPatient(p:Patient){
+  return history(p).filter(s=>new Date(s.start_at)<=new Date()).sort((a,b)=>new Date(b.start_at).getTime()-new Date(a.start_at).getTime())[0];
+}
+function daysSinceLastVisit(p:Patient){
+  const last=lastScheduleForPatient(p);
+  if(!last)return null;
+  return Math.floor((Date.now()-new Date(last.start_at).getTime())/(1000*60*60*24));
+}
+function aiScheduleRiskLevel(p:Patient,ymd=scheduleDatePart()){
+  const target=targetMonthlyCount(p);
+  const month=patientMonthCount(p,ymd);
+  const week=patientWeekCount(p,ymd);
+  const days=daysSinceLastVisit(p);
+  if(!target)return '確認';
+  if(month===0 && target>=2)return '高';
+  if(month<target && week===0)return '高';
+  if(month<target)return '中';
+  if(days!==null && days>28 && target>=2)return '中';
+  return '低';
+}
+function aiScheduleReason(p:Patient,ymd=scheduleDatePart()){
+  const target=targetMonthlyCount(p);
+  const month=patientMonthCount(p,ymd);
+  const week=patientWeekCount(p,ymd);
+  const days=daysSinceLastVisit(p);
+  const parts:string[]=[];
+  if(target)parts.push(`今月${month}/${target}回`);
+  else parts.push('訪問頻度未設定');
+  parts.push(`今週${week}回`);
+  if(days===null)parts.push('過去訪問なし');
+  else parts.push(`前回から${days}日`);
+  if(target && month<target)parts.push('予定追加候補');
+  if(week===0)parts.push('今週未予定');
+  return parts.join(' / ');
+}
+
+function aiScheduleCreateCandidates(){
+  const ymd=scheduleDatePart();
+  const base=(String(scheduleLocationType)==='home'
+    ? patients.filter(p=>!p.facility_id)
+    : patients.filter(p=>p.facility_id===facilityId));
+  return base
+    .filter(p=>!selectedPatientIds.includes(p.id))
+    .map(p=>{
+      const target=targetMonthlyCount(p);
+      const month=patientMonthCount(p,ymd);
+      const week=patientWeekCount(p,ymd);
+      const days=daysSinceLastVisit(p);
+      const score=(week===0?100:0)+(target&&month<target?80:0)+(days?Math.min(days,45):20);
+      const reason=[
+        week===0?'今週未予定':'今週予定あり',
+        target?`今月${month}/${target}回`:`頻度未設定`,
+        days===null?'過去訪問なし':`前回から${days}日`
+      ].join(' / ');
+      return {p,score,reason,month,week,target,days};
+    })
+    .sort((a,b)=>b.score-a.score);
+}
+function aiApplyTopSchedulePatients(limit=3){
+  const candidates=aiScheduleCreateCandidates().filter(x=>x.week===0 || (x.target>0 && x.month<x.target));
+  if(candidates.length===0){
+    setMsg('AI候補はありません。頻度や今月回数は足りています。');
+    return;
+  }
+  const ids=candidates.slice(0,limit).map(x=>x.p.id);
+  setSelectedPatientIds(prev=>Array.from(new Set([...prev,...ids])));
+  setMsg(`AI候補 ${ids.length}名を選択しました`);
+}
+function aiSuggestScheduleTime(){
+  const ymd=scheduleDatePart();
+  const sameDay=sortedSchedules.filter(s=>String(s.start_at||'').slice(0,10)===ymd && (s.route_no||1)===routeNo)
+    .sort((a,b)=>new Date(a.start_at).getTime()-new Date(b.start_at).getTime());
+  if(sameDay.length===0){
+    setScheduleTimePart(routeNo===1?'10:00':'13:00');
+    setMsg('AIが空き時間を提案しました');
+    return;
+  }
+  const last=sameDay[sameDay.length-1];
+  const d=new Date(last.start_at);
+  d.setMinutes(d.getMinutes()+treatmentMinutesForSchedule(last)+15);
+  const hhmm=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  setScheduleTimePart(hhmm);
+  setMsg(`AIが ${hhmm} を提案しました`);
+}
+function aiScheduleCreateReason(){
+  const c=aiScheduleCreateCandidates().slice(0,5);
+  if(c.length===0)return '施設・区分を選ぶとAI候補を表示します。';
+  return c.map((x,i)=>`${i+1}. ${x.p.name}：${x.reason}`).join('\n');
+}
+
+function aiScheduleSuggestions(ymd=scheduleDatePart()){
+  return patients
+    .filter(p=>targetMonthlyCount(p)>0)
+    .map(p=>({p,level:aiScheduleRiskLevel(p,ymd),reason:aiScheduleReason(p,ymd),target:targetMonthlyCount(p),month:patientMonthCount(p,ymd),week:patientWeekCount(p,ymd),days:daysSinceLastVisit(p)}))
+    .filter(x=>x.level!=='低')
+    .sort((a,b)=>{
+      const rank=(v:string)=>v==='高'?0:v==='中'?1:2;
+      const r=rank(a.level)-rank(b.level);
+      if(r!==0)return r;
+      return (a.month/a.target)-(b.month/b.target);
+    });
+}
+function patientMemoItems(p:Patient){
+  const hist=history(p).slice(-12).reverse();
+  const items:string[]=[];
+  if(p.medical_history)items.push(`既往症：${p.medical_history}`);
+  if(p.memo)items.push(`基本メモ：${p.memo}`);
+  hist.forEach(s=>{
+    const names=s.patient_names&&s.patient_names.length?s.patient_names:[''];
+    const idxById=(s.patient_ids||[]).findIndex(id=>id===p.id);
+    const idx=idxById>=0?idxById:names.findIndex(n=>n===p.name);
+    const name=names[idx]||p.name;
+    const key=patientKeyFor(s,name,Math.max(idx,0));
+    const memo=s.patient_memos?.[key] || s.memo || '';
+    const treatment=idx>=0?treatmentFor(s,name,idx):s.treatment;
+    if(memo || treatment)items.push(`${dateOnly(s.start_at)} ${treatment||''} ${memo||''}`.trim());
+  });
+  return items;
+}
+function aiPatientSummary(p:Patient){
+  const items=patientMemoItems(p);
+  const text=items.join(' / ');
+  const lower=text.toLowerCase();
+  const attention:string[]=[];
+  const denture:string[]=[];
+  const next:string[]=[];
+  const general:string[]=[];
+  if(p.medical_history)attention.push(`既往症：${p.medical_history}`);
+  if(/痛|疼痛|痛み|潰瘍|傷|出血|腫|発赤/.test(text))attention.push('疼痛・粘膜症状の記載あり。次回確認が必要です。');
+  if(/義歯|入れ歯|デンチャ|denture|bite|印象|セット|tf/i.test(text))denture.push('義歯関連の対応履歴あり。適合・疼痛・安定性を確認してください。');
+  if(/嚥下|むせ|咳|食事|舌圧|パタカラ|摂食/.test(text))attention.push('嚥下・食事関連の記載あり。食形態やむせを確認してください。');
+  if(/次回|予定|調整|確認|再診|セット|印象|修理/.test(text))next.push('前回メモに次回対応につながる記載があります。');
+  if(p.care_manager)general.push(`ケアマネ：${p.care_manager}${p.care_manager_company?`（${p.care_manager_company}）`:''}`);
+  if(p.visit_frequency)general.push(`訪問頻度：${p.visit_frequency}`);
+  if(items.length===0)general.push('メモ・履歴が少ないため要約できる情報が不足しています。');
+  return {
+    attention:attention.length?attention:['特記リスクはメモ上確認できません。'],
+    denture:denture.length?denture:['義歯関連の重要メモは確認できません。'],
+    next:next.length?next:['次回対応は通常確認です。'],
+    general
+  };
+}
+
 const facilityPatients=useMemo(()=>String(scheduleLocationType)==='home'?patients.filter(p=>!p.facility_id):patients.filter(p=>p.facility_id===facilityId),[patients,facilityId,scheduleLocationType]);
 const filteredFacilityPatients=useMemo(()=>{
   const q=schedulePatientSearch.trim().toLowerCase();
-  if(!q)return facilityPatients;
-  return facilityPatients.filter(p=>{
+  const base=!q?facilityPatients:facilityPatients.filter(p=>{
     const f=getFacility(p.facility_id)?.name||'';
     return [p.name,p.kana,p.room,p.patient_address,p.phone,f].some(v=>(v||'').toLowerCase().includes(q));
   });
-},[facilityPatients,schedulePatientSearch,facilities]);
+  return priorityPatientsByScheduleNeed(base);
+},[facilityPatients,schedulePatientSearch,facilities,schedules,startAt]);
 function scheduleMatchesPatient(s:Schedule,p:Patient){return !!(s.patient_ids?.includes(p.id)||s.patient_names?.includes(p.name))}
 function monthCount(p:Patient){
   const n=new Date();
@@ -326,8 +616,10 @@ function monthCount(p:Patient){
   }).length;
 }
 function history(p:Patient){return sortedSchedules.filter(s=>scheduleMatchesPatient(s,p))} function nextSchedule(p:Patient){const now=new Date();return history(p).find(s=>new Date(s.start_at)>=now)}
-const filteredPatients=useMemo(()=>{const q=patientSearch.toLowerCase();const list=patients.filter(p=>{const f=getFacility(p.facility_id)?.name||'';return ((p.name||'')+(p.kana||'')+f+(p.room||'')+(p.key_person||'')+(p.phone||'')+(p.care_manager||'')+(p.patient_address||'')+(p.key_person_address||'')+(p.memo||'')).toLowerCase().includes(q)});return sortedPatientsNewestFirst(list)},[patientSearch,patients,facilities]);
-const filteredFacilities=useMemo(()=>{const q=facilitySearch.toLowerCase();return facilities.filter(f=>(f.name+(f.address||'')+(f.phone||'')).toLowerCase().includes(q))},[facilitySearch,facilities]);
+const clinicFilteredPatients=useMemo(()=>patients.filter(p=>(p.clinic_id||'aloha')===activeClinicId),[patients,activeClinicId]);
+const filteredPatients=useMemo(()=>{const q=patientSearch.toLowerCase();const list=clinicFilteredPatients.filter(p=>{const f=getFacility(p.facility_id)?.name||'';return ((p.name||'')+(p.kana||'')+f+(p.room||'')+(p.key_person||'')+(p.phone||'')+(p.care_manager||'')+(p.patient_address||'')+(p.key_person_address||'')+(p.memo||'')).toLowerCase().includes(q)});return sortedPatientsNewestFirst(list)},[patientSearch,clinicFilteredPatients,facilities]);
+const clinicFilteredFacilities=useMemo(()=>facilities.filter(f=>(f.clinic_id||'aloha')===activeClinicId),[facilities,activeClinicId]);
+const filteredFacilities=useMemo(()=>{const q=facilitySearch.toLowerCase();return clinicFilteredFacilities.filter(f=>(f.name+(f.address||'')+(f.phone||'')).toLowerCase().includes(q))},[facilitySearch,clinicFilteredFacilities]);
 function patientKeyFor(s:Schedule,name:string,index:number){
   return s.patient_ids?.[index] || name;
 }
@@ -639,6 +931,8 @@ function removePatientSchemaFields(payload:any, message?:string){
   const text=message||'';
   if(text.includes('care_manager_phone'))delete p.care_manager_phone;
   if(text.includes('care_manager_company'))delete p.care_manager_company;
+  if(text.includes('medical_history'))delete p.medical_history;
+  if(text.includes('clinic_id'))delete p.clinic_id;
   return p;
 }
 
@@ -672,6 +966,7 @@ async function savePatient(){
   }
 
   const payload={
+    clinic_id:activeClinicId,
     facility_id:String(patientLocationType)==='facility' ? (patientForm.facility_id||null) : null,
     name:patientForm.name.trim(),
     kana:patientForm.kana||'',
@@ -691,6 +986,7 @@ async function savePatient(){
     call_before_visit:!!patientForm.call_before_visit,
     family_attendance:!!patientForm.family_attendance,
     free_checkup:!!patientForm.free_checkup,
+    medical_history:patientForm.medical_history||'',
     memo:patientForm.memo||''
   };
 
@@ -776,7 +1072,6 @@ function getNextDateByFrequency(base:Date, frequency?:string){
 function createNextSchedule(s:Schedule, displayName?:string, displayIndex=0){
   setReturnTab('today');
   setEditingScheduleId('');
-  setFacilityId(s.facility_id||'');
   setRouteNo(s.route_no||1);
 
   const ps=(s.patient_ids||[]).map(id=>getPatient(id)).filter(Boolean) as Patient[];
@@ -784,21 +1079,29 @@ function createNextSchedule(s:Schedule, displayName?:string, displayIndex=0){
   const selectedIds=targetPatient ? [targetPatient.id] : (s.patient_ids||[]);
   const manualName=targetPatient ? '' : (displayName || (s.patient_ids?.length ? '' : (s.patient_names?.join('、')||'')));
 
+  // 居宅患者の次回登録で、区分が施設・既定施設（例：オリーブ）に戻らないようにする。
+  // 患者にfacility_idが無ければ必ず「居宅」、施設患者ならその患者の施設を優先。
+  const nextLocationType=targetPatient ? (targetPatient.facility_id?'facility':'home') : (s.facility_id?'facility':'home');
+  setScheduleLocationType(nextLocationType);
+  setFacilityId(nextLocationType==='facility' ? (targetPatient?.facility_id || s.facility_id || '') : '');
+
   setSelectedPatientIds(selectedIds);
-  setManualPatients(manualName); setSchedulePatientSearch(targetPatient?.name || '');
+  setManualPatients(manualName);
+  setSchedulePatientSearch(targetPatient?.name || '');
 
   const selectedTreatment=displayName ? treatmentFor(s,displayName,displayIndex) : (s.treatment||treatmentOptions[0]);
   setTreatment(selectedTreatment || treatmentOptions[0]);
 
   const frequency=targetPatient?.visit_frequency || ps[0]?.visit_frequency || '';
-  const next=new Date(s.start_at);
+  const next=getNextDateByFrequency(new Date(s.start_at),frequency);
 
   setStartAt(new Date(next.getTime()-next.getTimezoneOffset()*60000).toISOString().slice(0,16));
-  setScheduleMemo(s.memo||'');
-  setNextDraftInfo(`${displayName || s.patient_names?.join('、')} / ${getFacility(s.facility_id)?.name || ''} / 初期日付：元の予定日`);
+  setScheduleMemo('');
+  const locationLabel=nextLocationType==='home'?'居宅':(getFacility(targetPatient?.facility_id || s.facility_id)?.name || '');
+  setNextDraftInfo(`${displayName || s.patient_names?.join('、')} / ${locationLabel} / 初期日付：訪問頻度から自動計算`);
   setTab('next');
   scrollToScheduleForm();
-  setMsg('次回登録ページを開きました。日付を変更して保存してください');
+  setMsg('次回登録ページを開きました。居宅/施設区分を引き継ぎました');
 }
 
 function adjustNextDraftDays(days:number){
@@ -843,6 +1146,7 @@ async function saveSchedule(){
   const newStartAt=`${startAt}:00+09:00`;
   const normalizedFacilityId=String(scheduleLocationType)==='facility'?facilityId:'';
   const row={
+    clinic_id:activeClinicId,
     facility_id:normalizedFacilityId||null,
     patient_ids:selectedPatientIds,
     patient_names:names,
@@ -1099,7 +1403,7 @@ async function geocodeFacilityAddress(){
   return loc;
 }
 
-async function saveFacility(){if(!facilityName.trim())return setMsg('施設名を入力してください');let lat=facilityLat?Number(facilityLat):null;let lng=facilityLng?Number(facilityLng):null;if((!lat||!lng)&&facilityAddress.trim()){const geo=await geocodeFacilityAddress();if(geo){lat=geo.lat;lng=geo.lng;}}const row={name:facilityName.trim(),address:facilityAddress,phone:facilityPhone,fax_number:facilityFax,fax_schedule_type:facilityFaxType,latitude:lat,longitude:lng};const res=editingFacilityId?await supabase.from('facilities').update(row).eq('id',editingFacilityId):await supabase.from('facilities').insert(row);if(res.error)return setMsg('エラー：'+res.error.message);setEditingFacilityId('');setFacilityName('');setFacilityAddress('');setFacilityPhone('');setFacilityFax('');setFacilityFaxType('monthly');setFacilityLat('');setFacilityLng('');await load()} function editFacility(f:Facility){setEditingFacilityId(f.id);setFacilityName(f.name||'');setFacilityAddress(f.address||'');setFacilityPhone(f.phone||'');setFacilityFax(f.fax_number||'');setFacilityFaxType(f.fax_schedule_type||'monthly');setFacilityLat(f.latitude?String(f.latitude):'');setFacilityLng(f.longitude?String(f.longitude):'')} async function deleteFacility(id:string){if(!confirm('施設を削除しますか？'))return;const {error}=await supabase.from('facilities').delete().eq('id',id);if(error)return setMsg('エラー：'+error.message);await load()}
+async function saveFacility(){if(!facilityName.trim())return setMsg('施設名を入力してください');let lat=facilityLat?Number(facilityLat):null;let lng=facilityLng?Number(facilityLng):null;if((!lat||!lng)&&facilityAddress.trim()){const geo=await geocodeFacilityAddress();if(geo){lat=geo.lat;lng=geo.lng;}}const row={clinic_id:activeClinicId,name:facilityName.trim(),address:facilityAddress,phone:facilityPhone,fax_number:facilityFax,fax_schedule_type:facilityFaxType,latitude:lat,longitude:lng};const res=editingFacilityId?await supabase.from('facilities').update(row).eq('id',editingFacilityId):await supabase.from('facilities').insert(row);if(res.error)return setMsg('エラー：'+res.error.message);setEditingFacilityId('');setFacilityName('');setFacilityAddress('');setFacilityPhone('');setFacilityFax('');setFacilityFaxType('monthly');setFacilityLat('');setFacilityLng('');await load()} function editFacility(f:Facility){setEditingFacilityId(f.id);setFacilityName(f.name||'');setFacilityAddress(f.address||'');setFacilityPhone(f.phone||'');setFacilityFax(f.fax_number||'');setFacilityFaxType(f.fax_schedule_type||'monthly');setFacilityLat(f.latitude?String(f.latitude):'');setFacilityLng(f.longitude?String(f.longitude):'')} async function deleteFacility(id:string){if(!confirm('施設を削除しますか？'))return;const {error}=await supabase.from('facilities').delete().eq('id',id);if(error)return setMsg('エラー：'+error.message);await load()}
 function isHomeFacility(f?:Facility){
   return (f?.name||'').includes('居宅');
 }
@@ -1703,17 +2007,45 @@ function BeginnerTutorial(){
   </div>
 }
 
+
+function patientScheduleStatusForDate(p:Patient,ymd:string){
+  const m=patientMonthCount(p,ymd);
+  const w=patientWeekCount(p,ymd);
+  const target=targetMonthlyCount(p);
+  return {
+    month:m,
+    week:w,
+    target,
+    label:`今月${m}${target?`/${target}`:''}回・今週${w}回`,
+    needsWeek:w===0,
+    needsMonth:target>0 && m<target
+  };
+}
+function sortPatientsForAddModal(list:Patient[],ymd:string){
+  return [...list].sort((a,b)=>{
+    const as=patientScheduleStatusForDate(a,ymd);
+    const bs=patientScheduleStatusForDate(b,ymd);
+    if(as.needsWeek!==bs.needsWeek)return as.needsWeek?-1:1;
+    if(as.needsMonth!==bs.needsMonth)return as.needsMonth?-1:1;
+    const ar=as.target?as.month/as.target:999;
+    const br=bs.target?bs.month/bs.target:999;
+    if(ar!==br)return ar-br;
+    return (a.kana||a.name||'').localeCompare(b.kana||b.name||'','ja');
+  });
+}
+
 function AddPatientModal(){
   const s=addPatientModalSchedule;
   if(!s)return null;
 
   const q=addPatientSearch.trim().toLowerCase();
-  const addCandidates=patients.filter(p=>{
+  const modalYmd=String(s.start_at||'').slice(0,10) || localYmdValue();
+  const addCandidates=sortPatientsForAddModal(patients.filter(p=>{
     if(p.facility_id!==s.facility_id)return false;
     if(s.patient_ids?.includes(p.id) || s.patient_names?.includes(p.name))return false;
     if(!q)return true;
     return [p.name,p.kana,p.room,p.visit_frequency,p.care_manager_company,p.care_manager_phone].some(v=>(v||'').toLowerCase().includes(q));
-  });
+  }),modalYmd);
 
   function closeAddPatientModal(){
     setAddingScheduleId('');
@@ -1745,13 +2077,20 @@ function AddPatientModal(){
         }}>検索</button>
       </div>
 
-      <div className='small'>文字入力後に「検索」を押してください</div>
+      <div className='small'>今週入っていない患者を上位表示します。今月回数も確認できます。</div>
 
       <div className='checks addCandidates modalCandidates'>
-        {addCandidates.map(p=><label className='checkrow' key={p.id}>
-          <input type='checkbox' checked={addPatientIds.includes(p.id)} onChange={e=>setAddPatientIds(prev=>e.target.checked?[...prev,p.id]:prev.filter(id=>id!==p.id))}/>
-          <span>{p.room?`${p.room}　`:''}{p.name}{p.visit_frequency?`　${p.visit_frequency}`:''}</span>
-        </label>)}
+        {addCandidates.map(p=>{
+          const st=patientScheduleStatusForDate(p,modalYmd);
+          return <label className={'checkrow '+(st.needsWeek?'needsSchedule':'')} key={p.id}>
+            <input type='checkbox' checked={addPatientIds.includes(p.id)} onChange={e=>setAddPatientIds(prev=>e.target.checked?[...prev,p.id]:prev.filter(id=>id!==p.id))}/>
+            <span>{p.room?`${p.room}　`:''}{p.name}</span>
+            {st.needsWeek&&<span className='badge'>今週未予定</span>}
+            {st.needsMonth&&<span className='badge'>今月不足</span>}
+            {p.visit_frequency&&<span className='badge'>頻度：{p.visit_frequency}</span>}
+            <span className='badge'>{st.label}</span>
+          </label>
+        })}
       </div>
 
       {addCandidates.length===0&&<div className='small'>候補がありません。デモでは「宇都宮」などで検索してみてください。</div>}
@@ -1765,6 +2104,18 @@ function AddPatientModal(){
 }
 
 function renderPatientForm(){const p=patientForm;const hist=history(p).slice(-6).reverse();return <div className='detail'><div className='row'><h2>{p.id?'👤 患者詳細':'➕ 患者登録'}</h2><button className='mini' onClick={()=>setShowPatientForm(false)}>閉じる</button></div>{p.id&&<div className='grid2'><div className='stat'><b>{monthCount(p)}</b>今月</div><div className='stat'><b>{hist.length}</b>履歴</div></div>}
+{p.id&&<div className='patientInfoBox aiSummaryBox'>
+  <h3>🤖 患者メモAI要約</h3>
+  {(() => {
+    const s=aiPatientSummary(p);
+    return <div>
+      <div className='infoLine'><span>注意点</span><b>{s.attention.join(' / ')}</b></div>
+      <div className='infoLine'><span>義歯</span><b>{s.denture.join(' / ')}</b></div>
+      <div className='infoLine'><span>次回</span><b>{s.next.join(' / ')}</b></div>
+      {s.general.length>0&&<div className='small'>{s.general.join(' / ')}</div>}
+    </div>
+  })()}
+</div>}
 {p.id&&<div className='patientInfoBox'>
   <h3>連絡先</h3>
   <div className='infoLine'><span>ケアマネ</span><b>{p.care_manager||'未登録'}</b></div>
@@ -1816,7 +2167,7 @@ function renderPatientForm(){const p=patientForm;const hist=history(p).slice(-6)
     <input value={p.care_manager_phone||''} onChange={e=>setPatientField('care_manager_phone',e.target.value)} placeholder='電話番号'/>
     {p.care_manager_phone&&<button type='button' className='secondary phoneMini' onClick={()=>callPhone(p.care_manager_phone)}>電話</button>}
   </div>
-</div><label>メモ</label><textarea value={p.memo||''} onChange={e=>setPatientField('memo',e.target.value)}/>{p.id&&<><h3>診療履歴</h3>{hist.map(h=><div className='item' key={h.id}><b>{dateOnly(h.start_at)}</b><div className='small'>{h.treatment} / {getFacility(h.facility_id)?.name}</div></div>)}</>}<div className='grid3'><button className='secondary' onClick={()=>callPhone(p.phone)}>電話</button><button className='secondary' onClick={()=>openMap(p.patient_address||p.key_person_address,p.name)}>地図</button><button className='secondary' onClick={()=>createPatientChartPdf(p)}>カルテPDF</button><button className='secondary danger' onClick={()=>deletePatient(p.id)}>削除</button></div><button className='primary' onClick={savePatient}>保存</button></div>}
+</div><label>既往症・注意すべき疾患</label><textarea value={p.medical_history||''} onChange={e=>setPatientField('medical_history',e.target.value)} placeholder='例：高血圧、糖尿病、脳梗塞既往、抗凝固薬、認知症、アレルギーなど'/><label>メモ</label><textarea value={p.memo||''} onChange={e=>setPatientField('memo',e.target.value)}/>{p.id&&<><h3>診療履歴</h3>{hist.map(h=><div className='item' key={h.id}><b>{dateOnly(h.start_at)}</b><div className='small'>{h.treatment} / {getFacility(h.facility_id)?.name}</div></div>)}</>}<div className='grid3'><button className='secondary' onClick={()=>callPhone(p.phone)}>電話</button><button className='secondary' onClick={()=>openMap(p.patient_address||p.key_person_address,p.name)}>地図</button><button className='secondary' onClick={()=>createPatientChartPdf(p)}>カルテPDF</button><button className='secondary danger' onClick={()=>deletePatient(p.id)}>削除</button></div><button className='primary' onClick={savePatient}>保存</button></div>}
 
 function monthSchedules(){
   const [y,m]=selectedMonth.split('-').map(Number);
@@ -1909,10 +2260,68 @@ function distKm(a:{lat:number;lng:number},b:{lat:number;lng:number}){
   const h=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLng/2)**2;
   return 2*R*Math.asin(Math.sqrt(h));
 }
+function estimatedDriveMinutesByKm(km:number){
+  const roadKm=km*1.35;
+  return Math.max(10,Math.ceil((roadKm/22)*60));
+}
+function travelMinutesFromCoordToSchedule(start:{lat:number;lng:number}|null,s?:Schedule){
+  if(!start||!s)return 0;
+  const c=coordsForSchedule(s);
+  if(!c)return 15;
+  return estimatedDriveMinutesByKm(distKm(start,c));
+}
+function travelMinutesBetween(a?:Schedule,b?:Schedule){
+  if(!a||!b)return 0;
+  const ca=coordsForSchedule(a);
+  const cb=coordsForSchedule(b);
+  if(!ca||!cb)return 15;
+  return estimatedDriveMinutesByKm(distKm(ca,cb));
+}
+function treatmentMinutesForSchedule(s?:Schedule){
+  if(!s)return 0;
+  const names=s.patient_names&&s.patient_names.length?s.patient_names:[''];
+  const count=names.filter((name,index)=>!isPatientCanceled(s,name,index)&&isCountTarget(s,name,index)).length;
+  return Math.max(20,count*20);
+}
+function previewTimePlan(list:Schedule[],baseStart:string){
+  const result:{id:string;start:string;end:string;travel:number;treat:number}[]=[];
+  let current=new Date(baseStart);
+  list.forEach((s,index)=>{
+    const travel=index===0?travelMinutesFromCoordToSchedule(activeClinicStartCoord(),s):travelMinutesBetween(list[index-1],s);
+    if(index>0)current.setMinutes(current.getMinutes()+travel);
+    const start=new Date(current);
+    const treat=treatmentMinutesForSchedule(s);
+    current.setMinutes(current.getMinutes()+treat);
+    const end=new Date(current);
+    const hhmm=(d:Date)=>`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    result.push({id:s.id,start:hhmm(start),end:hhmm(end),travel,treat});
+  });
+  return result;
+}
+function planStartIso(baseStart:string,list:Schedule[],index:number){
+  const plan=previewTimePlan(list,baseStart);
+  const p=plan[index];
+  const base=new Date(baseStart);
+  const [h,m]=(p?.start||'10:00').split(':').map(Number);
+  base.setHours(h||0,m||0,0,0);
+  return `${base.getFullYear()}-${String(base.getMonth()+1).padStart(2,'0')}-${String(base.getDate()).padStart(2,'0')}T${String(base.getHours()).padStart(2,'0')}:${String(base.getMinutes()).padStart(2,'0')}:00+09:00`;
+}
 function nearestRouteOrder(list:Schedule[]){
   const remaining=[...list].sort((a,b)=>new Date(a.start_at).getTime()-new Date(b.start_at).getTime());
-  if(remaining.length<=2)return remaining;
-  const ordered:Schedule[]=[remaining.shift() as Schedule];
+  if(remaining.length<=1)return remaining;
+  const start=activeClinicStartCoord();
+  const ordered:Schedule[]=[];
+  if(start){
+    let bestIdx=0,best=Infinity;
+    remaining.forEach((s,i)=>{
+      const c=coordsForSchedule(s);
+      const d=c?distKm(start,c):Infinity;
+      if(d<best){best=d;bestIdx=i;}
+    });
+    ordered.push(remaining.splice(bestIdx,1)[0]);
+  }else{
+    ordered.push(remaining.shift() as Schedule);
+  }
   while(remaining.length){
     const last=coordsForSchedule(ordered[ordered.length-1]);
     if(!last){ordered.push(remaining.shift() as Schedule);continue;}
@@ -1926,31 +2335,129 @@ function nearestRouteOrder(list:Schedule[]){
   }
   return ordered;
 }
-async function optimizeSelectedDateRoute(routeNo:1|2){
+function routeDistanceKm(list:Schedule[]){
+  let total=0;
+  const start=activeClinicStartCoord();
+  const end=activeClinicEndCoord();
+  if(start&&list[0]){
+    const first=coordsForSchedule(list[0]);
+    if(first)total+=distKm(start,first);
+  }
+  for(let i=1;i<list.length;i++){
+    const a=coordsForSchedule(list[i-1]);
+    const b=coordsForSchedule(list[i]);
+    if(a&&b)total+=distKm(a,b);
+  }
+  if(end&&list.length){
+    const last=coordsForSchedule(list[list.length-1]);
+    if(last)total+=distKm(last,end);
+  }
+  return total;
+}
+function routeItemTitle(s:Schedule){
+  const f=getFacility(s.facility_id);
+  const names=(s.patient_names||[]).filter((name,index)=>!isPatientCanceled(s,name,index)).join('・');
+  return `${time(s.start_at)} ${f?.name||'居宅'} ${names?` / ${names}`:''}`;
+}
+function previewSchedules(){
+  return routePreview?routePreview.ids.map(id=>schedules.find(s=>s.id===id)).filter(Boolean) as Schedule[]:[];
+}
+function previewStartAt(index:number){
+  if(!routePreview)return '';
+  const list=previewSchedules();
+  return previewTimePlan(list,routePreview.baseStart)[index]?.start || '';
+}
+function updatePreviewBaseTime(value:string){
+  if(!routePreview)return;
+  const base=new Date(routePreview.baseStart);
+  const [h,m]=value.split(':').map(Number);
+  base.setHours(h||0,m||0,0,0);
+  const iso=`${base.getFullYear()}-${String(base.getMonth()+1).padStart(2,'0')}-${String(base.getDate()).padStart(2,'0')}T${String(base.getHours()).padStart(2,'0')}:${String(base.getMinutes()).padStart(2,'0')}:00+09:00`;
+  setRoutePreview({...routePreview,baseStart:iso});
+}
+function moveRoutePreviewItem(from:number,to:number){
+  if(!routePreview || from===to || to<0 || to>=routePreview.ids.length)return;
+  const ids=[...routePreview.ids];
+  const [item]=ids.splice(from,1);
+  ids.splice(to,0,item);
+  setRoutePreview({...routePreview,ids});
+}
+function openRouteOptimizationPreview(routeNo:1|2){
   const list=selectedDateSchedules().filter(s=>(s.route_no||1)===routeNo);
   if(list.length<2)return setMsg('最適化する予定がありません');
-  if(!confirm(`ルート${routeNo}の予定順を距離目安で並び替えますか？`))return;
   const ordered=nearestRouteOrder(list);
-  const first=new Date(ordered[0].start_at);
-  const updates=ordered.map((s,i)=>{
-    const d=new Date(first);
-    d.setMinutes(first.getMinutes()+i*45);
-    const iso=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}T${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:00+09:00`;
-    return {id:s.id,start_at:iso};
-  });
+  setRoutePreview({routeNo,ids:ordered.map(s=>s.id),baseStart:ordered[0]?.start_at||list[0].start_at});
+}
+async function applyRoutePreview(){
+  if(!routePreview)return;
+  const proposed=previewSchedules();
+  const updates=routePreview.ids.map((id,i)=>({id,start_at:planStartIso(routePreview.baseStart,proposed,i)}));
+  if(!confirm('このプレビューの順番と時間で予定を変更しますか？'))return;
   if(demoMode){
     setSchedules(prev=>prev.map(s=>{
       const u=updates.find(x=>x.id===s.id);
       return u?{...s,start_at:u.start_at}:s;
     }));
-    return setMsg(`ルート${routeNo}を最適化しました（デモ）`);
+    setRoutePreview(null);
+    return setMsg(`ルート${routePreview.routeNo}を変更しました（デモ）`);
   }
   for(const u of updates){
     const {error}=await supabase.from('schedules').update({start_at:u.start_at}).eq('id',u.id);
     if(error)return setMsg('エラー：'+error.message);
   }
+  setRoutePreview(null);
   await load();
-  setMsg(`ルート${routeNo}を最適化しました`);
+  setMsg(`ルート${routePreview.routeNo}を変更しました`);
+}
+function RouteOptimizationPreview(){
+  if(!routePreview)return null;
+  const current=selectedDateSchedules().filter(s=>(s.route_no||1)===routePreview.routeNo).sort((a,b)=>new Date(a.start_at).getTime()-new Date(b.start_at).getTime());
+  const proposed=previewSchedules();
+  const before=routeDistanceKm(current);
+  const after=routeDistanceKm(proposed);
+  const diff=before-after;
+  return <div className='modalOverlay' onClick={()=>setRoutePreview(null)}>
+    <div className='routePreviewModal' onClick={e=>e.stopPropagation()}>
+      <div className='adminHeader'>
+        <div><div className='easyLabel'>ルート最適化プレビュー</div><h2>ルート{routePreview.routeNo}</h2></div>
+        <button className='mini' onClick={()=>setRoutePreview(null)}>閉じる</button>
+      </div>
+      <div className='adminStats'>
+        <div><b>{before.toFixed(1)}km</b><span>現在</span></div>
+        <div><b>{after.toFixed(1)}km</b><span>提案</span></div>
+        <div><b>{diff>0?`${diff.toFixed(1)}km短縮`:'調整なし'}</b><span>目安</span></div>
+        <div><b>{previewTimePlan(proposed,routePreview.baseStart).reduce((sum,x)=>sum+x.travel+x.treat,0)}分</b><span>移動＋診療</span></div>
+      </div>
+      <label>開始時間</label>
+      <input type='time' value={previewStartAt(0)} onChange={e=>updatePreviewBaseTime(e.target.value)}/>
+      <div className='small'>ドラッグで順番を変更できます。移動時間は座標から自動計算し、診療時間を足して開始時間を出します。</div>
+      <div className='routePreviewList'>
+        {proposed.map((s,index)=><div
+          key={s.id}
+          className='routePreviewItem'
+          draggable
+          onDragStart={()=>setDraggingRouteId(s.id)}
+          onDragOver={e=>e.preventDefault()}
+          onDrop={()=>{const from=proposed.findIndex(x=>x.id===draggingRouteId);moveRoutePreviewItem(from,index);setDraggingRouteId('')}}
+        >
+          <div className='routePreviewNo'>{index+1}</div>
+          <div className='routePreviewMain'>
+            <b>{previewStartAt(index)}　{getFacility(s.facility_id)?.name||'居宅'}</b>
+            <div className='small'>{(s.patient_names||[]).filter((name,i)=>!isPatientCanceled(s,name,i)).join('・')}</div>
+            <div className='small'>移動 {previewTimePlan(proposed,routePreview.baseStart)[index]?.travel||0}分 / 診療 {previewTimePlan(proposed,routePreview.baseStart)[index]?.treat||0}分 / 終了 {previewTimePlan(proposed,routePreview.baseStart)[index]?.end||''}</div>
+          </div>
+          <div className='routePreviewBtns'>
+            <button className='mini' onClick={()=>moveRoutePreviewItem(index,index-1)}>↑</button>
+            <button className='mini' onClick={()=>moveRoutePreviewItem(index,index+1)}>↓</button>
+          </div>
+        </div>)}
+      </div>
+      <div className='grid2 actionRow'>
+        <button className='secondary' onClick={()=>setRoutePreview(null)}>現在のまま</button>
+        <button className='primary' onClick={applyRoutePreview}>提案を採用</button>
+      </div>
+    </div>
+  </div>
 }
 
 function RouteSplitSchedulePage({dateLabel,list,from}:{dateLabel:string;list:Schedule[];from:Tab}){
@@ -1988,7 +2495,7 @@ function RouteSplitSchedulePage({dateLabel,list,from}:{dateLabel:string;list:Sch
       <button className={activeRoute===2?'on r2':'r2'} onClick={()=>switchCalendarRoute(2)}>🟢 ルート2<br/><b>{count2}件</b></button>
     </div>
 
-    <div className='grid2 actionRow'><button className='primary' onClick={createScheduleForSelectedDate}>この日に予定を追加</button><button className='secondary' onClick={()=>optimizeSelectedDateRoute(activeRoute as 1|2)}>🧭 ルート最適化</button></div>
+    <div className='grid2 actionRow'><button className='primary' onClick={createScheduleForSelectedDate}>この日に予定を追加</button><button className='secondary' onClick={()=>openRouteOptimizationPreview(activeRoute as 1|2)}>🧭 ルート最適化</button></div>
 
     <div className={'calendarRouteColumn activeCalendarRoute '+(activeRoute===1?'route1Column':'route2Column')}>
       <div className='routeColumnHeader'>
@@ -2067,7 +2574,10 @@ function createFacilityFaxPdf(f:Facility,type?:string){
   const periodText=range.singleDay ? range.startJp : `${range.startJp}〜${range.endJp}`;
   const rows=list.map(s=>{
     const names=(s.patient_names||[]).map(n=>withSama(n)).join('<br/>');
-    return `<tr><td class="date">${dateOnly(s.start_at)}</td><td class="time">${time(s.start_at)}</td><td class="names">${names}</td></tr>`;
+    const d=new Date(s.start_at);
+    const w=['日','月','火','水','木','金','土'][d.getDay()];
+    const dayClass=d.getDay()===0?' sunday':d.getDay()===6?' saturday':'';
+    return `<tr><td class="date${dayClass}">${dateOnly(s.start_at)}（${w}）</td><td class="time">${time(s.start_at)}</td><td class="names">${names}</td></tr>`;
   }).join('') || `<tr><td colspan="3" class="empty">予定はありません</td></tr>`;
 
   const html=`<!doctype html><html><head><meta charset="utf-8"/><title>${title}</title><style>
@@ -2082,7 +2592,7 @@ function createFacilityFaxPdf(f:Facility,type?:string){
     table{width:100%;border-collapse:collapse;font-size:22px;table-layout:fixed}
     th,td{border:1.5px solid #111;padding:14px 12px;vertical-align:middle}
     th{background:#f1f5f9;font-size:18px}
-    td.date{width:26%;font-weight:800;text-align:center}
+    td.date{width:26%;font-weight:800;text-align:center}.date.sunday{color:#dc2626;background:#fff1f2}.date.saturday{color:#2563eb;background:#eff6ff}
     td.time{width:18%;font-weight:900;text-align:center;font-size:24px}
     td.names{width:56%;font-weight:800;line-height:1.7}
     .empty{text-align:center;font-size:22px;padding:28px}
@@ -2097,7 +2607,7 @@ function createFacilityFaxPdf(f:Facility,type?:string){
       <div class="meta"><div>FAX：${f.fax_number||'未登録'}</div><div>作成日：${new Date().getFullYear()}年${new Date().getMonth()+1}月${new Date().getDate()}日</div></div>
       <table><thead><tr><th>日付</th><th>時間</th><th>患者名</th></tr></thead><tbody>${rows}</tbody></table>
       
-      <div class="sender">${CLINIC_CONFIG.shortName}<br/>訪問担当</div>
+      <div class="sender">${(activeClinic()?.faxSender||'アロハ歯科\n訪問担当').replace(/\n/g,'<br/>')}</div>
       <div class="actions"><button class="backBtn" onclick="window.close(); setTimeout(()=>history.back(),100)">← アプリへ戻る</button><button class="printBtn" onclick="window.print()">印刷 / PDF保存</button></div>
     </div>
   </body></html>`;
@@ -2184,10 +2694,10 @@ function createDailyReportPdf(){
   </style></head><body>
     <div class="sheet">
       <div class="top">
-        <div class="clinic">担当医院：　${CLINIC_CONFIG.reportClinic}</div>
+        <div class="clinic">担当医院：　アロハ歯科・矯正歯科　御中</div>
         <h1>診療日報</h1>
         <div class="sign">医師署名</div>
-        <div class="brand">${CLINIC_CONFIG.issuerName.replace('訪問歯科支援センター','訪問歯科支援センター<br/>')}</div>
+        <div class="brand">訪問歯科支援センター<br/>フロンティア</div>
       </div>
       <div class="date">${jpLongDateFromYmd(selectedDate)}</div>
       <table>
@@ -2217,7 +2727,7 @@ function CalendarDayDetail(){
     <div className='adminQuickActions' style={{marginBottom:10}}>
       <button className='primary' onClick={createDailyReportPdf}>📄 日報PDF</button>
     </div>
-    <RouteSplitSchedulePage dateLabel={selectedDate} list={list} from='calendar'/>
+    <div className='adminQuickActions' style={{marginBottom:10}}><button className='secondary' onClick={()=>{const el=document.getElementById('calendar-top'); if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}}>📅 カレンダーへ戻る</button></div><RouteSplitSchedulePage dateLabel={selectedDate} list={list} from='calendar'/>
   </div>
 }
 
@@ -2569,6 +3079,7 @@ function unlockAdmin(){
   }
 }
 function AdminGate({children}:{children:any}){
+  if(clinicUnlocked)return <div className='adminGate'><h2>管理画面は利用できません</h2><div className='small'>医院ログイン中は、患者・施設・予定の閲覧編集のみ利用できます。</div><button className='secondary' onClick={()=>setTab('home')}>戻る</button></div>;
   if(adminUnlocked)return children;
   return <div className='adminGate'>
     <h2>管理者モード</h2>
@@ -2580,12 +3091,32 @@ function AdminGate({children}:{children:any}){
 }
 
 function unlockClinicPortal(){
-  if(clinicPinInput===clinicPortalPin){
+  const loginEl=document.getElementById('clinic-login-id-field') as HTMLInputElement | null;
+  const passEl=document.getElementById('clinic-login-password-field') as HTMLInputElement | null;
+  const legacyPinEl=document.getElementById('clinic-login-pin-field') as HTMLInputElement | null;
+  const login=(loginEl?.value || clinicLoginInput || '').trim().toLowerCase();
+  const pass=(passEl?.value || clinicPasswordInput || legacyPinEl?.value || clinicPinInput || '').trim();
+  const matched=clinics.find(c=>
+    [c.id,c.shortName,c.portalLoginId].filter(Boolean).map(x=>String(x).toLowerCase()).includes(login)
+    && pass===(c.portalPassword||c.portalPin||'2026')
+  );
+  if(matched){
+    saveClinicsLocal(clinics,matched.id);
+    setFacilities([]);
+    setPatients([]);
+    setSchedules([]);
+    load(matched.id);
     setClinicUnlocked(true);
+    if(loginEl)loginEl.value='';
+    if(passEl)passEl.value='';
+    if(legacyPinEl)legacyPinEl.value='';
+    setClinicLoginInput('');
+    setClinicPasswordInput('');
     setClinicPinInput('');
-    setMsg('医院専用ログインしました');
+    setTab('home');
+    setMsg(`${matched.name} としてログインしました`);
   }else{
-    setMsg('PINが違います');
+    setMsg('IDまたはパスワードが違います');
   }
 }
 function saveClinicPortalPin(){
@@ -2621,37 +3152,32 @@ function ClinicScheduleReadOnly({list}:{list:Schedule[]}){
 }
 function ClinicPortal(){
   if(!clinicUnlocked){
-    if(tab==='clinicPortal')return <ClinicPortal/>;
-return <main className='wrap'>
+    return <main className='wrap'>
       <section className='head appHeader'>
         <div className='brandHeader'><img src='/apple-touch-icon.png' alt='FRONTIER OS' className='headerAppIcon'/><h1>医院専用ログイン</h1></div>
       </section>
       <section className='card'>
-        <h2>{CLINIC_CONFIG.reportClinic}</h2>
-        <div className='small'>予定確認・日報PDF用の医院専用画面です。請求設定や管理情報は表示されません。</div>
-        <input type='password' inputMode='numeric' value={clinicPinInput} onChange={e=>setClinicPinInput(e.target.value)} placeholder='医院用PIN' onKeyDown={e=>{if(e.key==='Enter')unlockClinicPortal()}}/>
+        <h2>医院専用ログイン</h2>
+        <div className='small'>医院ごとのIDとパスワードでログインできます。ログイン後は患者・施設・予定を閲覧編集できます。管理画面は表示されません。</div>
+        <label>医院ID</label>
+        <input id='clinic-login-id-field' defaultValue='' autoComplete='username' placeholder='例：takata' onKeyDown={e=>{if(e.key==='Enter')unlockClinicPortal()}}/>
+        <label>パスワード</label>
+        <input id='clinic-login-password-field' type='password' defaultValue='' autoComplete='current-password' placeholder='パスワード' onKeyDown={e=>{if(e.key==='Enter')unlockClinicPortal()}}/>
         <button className='primary' onClick={unlockClinicPortal}>ログイン</button>
         <button className='secondary' onClick={()=>setTab('home')}>戻る</button>
       </section>
     </main>
   }
-  const list=clinicDateSchedules();
   return <main className='wrap'>
     <section className='head appHeader'>
-      <div className='brandHeader'><img src='/apple-touch-icon.png' alt='FRONTIER OS' className='headerAppIcon'/><h1>医院専用画面</h1></div>
-      <button className='mini' onClick={()=>{setClinicUnlocked(false);setTab('home')}}>ログアウト</button>
+      <div className='brandHeader'><img src='/apple-touch-icon.png' alt='FRONTIER OS' className='headerAppIcon'/><h1>医院ログイン中</h1></div>
+      <button className='mini' onClick={()=>{setClinicUnlocked(false);setTab('clinicPortal')}}>ログアウト</button>
     </section>
     <section className='card'>
-      <h2>予定確認</h2>
-      <label>日付</label>
-      <input type='date' value={selectedDate} onChange={e=>setSelectedDate(e.target.value)}/>
-      <div className='grid2 actionRow'>
-        <button className='secondary' onClick={()=>setSelectedDate(localYmdValue(new Date()))}>今日</button>
-        <button className='secondary' onClick={()=>{const d=new Date();d.setDate(d.getDate()+1);setSelectedDate(localYmdValue(d));}}>明日</button>
-      </div>
-      <button className='primary' onClick={createDailyReportPdf}>📄 日報PDF</button>
+      <h2>{activeClinic()?.name||'医院'} でログイン中</h2>
+      <div className='small'>通常画面で患者・施設・予定を閲覧編集できます。管理画面は利用できません。</div>
+      <button className='primary' onClick={()=>setTab('home')}>通常画面へ進む</button>
     </section>
-    <ClinicScheduleReadOnly list={list}/>
   </main>
 }
 
@@ -2663,6 +3189,8 @@ function AdminMenu(){
     <button onClick={()=>setTab('adminStaff')}>👥 スタッフ</button>
     <button onClick={()=>setTab('adminFax')}>📠 FAX</button>
     <button onClick={()=>setTab('adminReports')}>📈 レポート</button>
+    <button onClick={()=>setTab('adminAI')}>🤖 AIチェック</button>
+    <button onClick={()=>setTab('adminClinics')}>🏥 医院管理</button>
     <button onClick={()=>setTab('clinicPortal')}>🏥 医院ログイン</button>
     <button onClick={()=>setTab('adminSettings')}>⚙️ 設定</button>
   </div>
@@ -2676,7 +3204,7 @@ function AdminDashboard(){
       <AdminMenu/>
       <div className='adminQuickGrid'>
         <button className='primary' onClick={()=>setTab('adminBilling')}>💰 請求管理へ</button>
-        <button className='secondary' onClick={()=>setTab('adminBillingSettings')}>①②設定へ</button><button className='secondary' onClick={()=>setTab('adminReports')}>📈 売上分析へ</button>
+        <button className='secondary' onClick={()=>setTab('adminBillingSettings')}>①②設定へ</button><button className='secondary' onClick={()=>setTab('adminReports')}>📈 売上分析へ</button><button className='secondary' onClick={()=>setTab('adminClinics')}>🏥 医院管理へ</button>
       </div>
       <div className='adminStats'>
         <div><b>{adminCountTargets(todayList)}</b><span>本日件数</span></div>
@@ -2685,6 +3213,14 @@ function AdminDashboard(){
         <div><b>{patients.length}</b><span>患者数</span></div>
         <div><b>{facilities.length}</b><span>施設数</span></div>
         <div><b>{adminCancelCount(month)}</b><span>今月キャンセル</span></div>
+      </div>
+      <div className='adminCard'>
+        <h3>予定入れ忘れチェック</h3>
+        <div className='small'>訪問頻度に対して、今月の予定が不足している患者を表示します。無料検診・担当者会議・キャンセルは除外します。</div>
+        <div className='billingRows'>
+          {missedSchedulePatientsForMonth().slice(0,12).map(p=><div key={p.id}><span>{p.name} <small>{getFacility(p.facility_id)?.name||'居宅'}</small></span><b>{patientScheduleStatusLabel(p)}</b></div>)}
+          {missedSchedulePatientsForMonth().length===0&&<div><span>不足患者なし</span><b>OK</b></div>}
+        </div>
       </div>
       <div className='adminCard'>
         <h3>月末請求の準備</h3>
@@ -2735,10 +3271,31 @@ function AdminFax(){
 function createPatientChartPdf(p:Patient){
   const hist=sortedSchedules.filter(s=>(s.patient_ids||[]).includes(p.id)||(s.patient_names||[]).includes(p.name)).slice(-20).reverse();
   const rows=hist.map(s=>`<tr><td>${fmt(s.start_at)}</td><td>${getFacility(s.facility_id)?.name||''}</td><td>${s.treatment||''}</td><td>${s.memo||''}</td></tr>`).join('');
-  const html=`<!doctype html><html><head><meta charset="utf-8"/><title>${p.name} カルテ</title><style>@page{size:A4;margin:12mm}body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans JP',Meiryo,sans-serif}h1{text-align:center}table{width:100%;border-collapse:collapse}td,th{border:1px solid #111;padding:6px;font-size:13px}.box{border:1px solid #111;padding:10px;margin:8px 0}</style></head><body><h1>患者カルテ</h1><div class="box"><b>${p.name} 様</b><br/>施設：${getFacility(p.facility_id)?.name||'居宅'}<br/>電話：${p.phone||''}<br/>ケアマネ：${p.care_manager||''}</div><div class="box"><b>注意事項・メモ</b><br/>${p.memo||''}</div><table><thead><tr><th>日付</th><th>施設</th><th>処置</th><th>メモ</th></tr></thead><tbody>${rows}</tbody></table><script>window.print()</script></body></html>`;
+  const html=`<!doctype html><html><head><meta charset="utf-8"/><title>${p.name} カルテ</title><style>
+    @page{size:A4;margin:12mm}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans JP',Meiryo,sans-serif;color:#111}
+    h1{text-align:center}
+    table{width:100%;border-collapse:collapse}
+    td,th{border:1px solid #111;padding:6px;font-size:13px}
+    .box{border:1px solid #111;padding:10px;margin:8px 0}
+    .actions{margin:14px 0;display:flex;gap:10px}
+    .actions button{padding:10px 16px;font-size:15px;border:1px solid #111;border-radius:8px;background:white;font-weight:900}
+    @media print{.actions{display:none}}
+  </style></head><body>
+    <div class="actions">
+      <button onclick="window.close(); setTimeout(()=>history.back(),100)">← アプリへ戻る</button>
+      <button onclick="window.print()">印刷 / PDF保存</button>
+    </div>
+    <h1>患者カルテ</h1>
+    <div class="box"><b>${p.name} 様</b><br/>施設：${getFacility(p.facility_id)?.name||'居宅'}<br/>電話：${p.phone||''}<br/>ケアマネ：${p.care_manager||''}</div>
+    <div class="box"><b>既往症・注意すべき疾患</b><br/>${p.medical_history||''}</div>
+    <div class="box"><b>注意事項・メモ</b><br/>${p.memo||''}</div>
+    <table><thead><tr><th>日付</th><th>施設</th><th>処置</th><th>メモ</th></tr></thead><tbody>${rows}</tbody></table>
+  </body></html>`;
   const w=window.open('','_blank');
   if(!w){setMsg('ポップアップがブロックされました');return;}
-  w.document.write(html);w.document.close();
+  w.document.write(html);
+  w.document.close();
 }
 
 function AdminReports(){
@@ -2782,6 +3339,29 @@ function AdminReports(){
     </div>
   </div></AdminGate>
 }
+function AdminAI(){
+  const suggestions=aiScheduleSuggestions();
+  return <AdminGate><div className='adminPage'>
+    <div className='adminHeader'><h2>🤖 AIチェック</h2><button className='mini' onClick={()=>setTab('admin')}>戻る</button></div>
+    <AdminMenu/>
+    <div className='adminCard'>
+      <h3>予定入れ忘れAIチェック</h3>
+      <div className='small'>訪問頻度・今月回数・今週回数・前回訪問から、予定追加が必要そうな患者を理由付きで表示します。</div>
+      <div className='billingRows'>
+        {suggestions.slice(0,30).map(x=><div key={x.p.id}>
+          <span><b>{x.level==='高'?'🔴':x.level==='中'?'🟡':'⚪'} {x.p.name}</b><br/><small>{getFacility(x.p.facility_id)?.name||'居宅'} / {x.reason}</small></span>
+          <button className='mini' onClick={()=>{openPatient(x.p);setTab('patients')}}>確認</button>
+        </div>)}
+        {suggestions.length===0&&<div><span>大きな予定不足はありません</span><b>OK</b></div>}
+      </div>
+    </div>
+    <div className='adminCard'>
+      <h3>患者メモAI要約の使い方</h3>
+      <div className='small'>患者詳細を開くと、既往症・過去メモ・診療履歴から「注意点」「義歯」「次回やること」を自動要約します。</div>
+    </div>
+  </div></AdminGate>
+}
+
 function exportFrontierBackup(){
   const data={
     version:FRONTIER_VERSION,
@@ -2803,7 +3383,7 @@ function exportFrontierBackup(){
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
   a.href=url;
-  a.download=`frontier_${CLINIC_CONFIG.id}_backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.download=`frontier_aloha_backup_${new Date().toISOString().slice(0,10)}.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -2828,6 +3408,120 @@ function importFrontierLocalSettings(file:File){
     }
   };
   reader.readAsText(file);
+}
+
+async function geocodeClinicInput(inputId:string,latId:string,lngId:string){
+  const addressEl=document.getElementById(inputId) as HTMLInputElement | HTMLTextAreaElement | null;
+  const latEl=document.getElementById(latId) as HTMLInputElement | null;
+  const lngEl=document.getElementById(lngId) as HTMLInputElement | null;
+  const address=(addressEl?.value||'').trim();
+  if(!address)return setMsg('住所を入力してください');
+  const loc=await geocodeAddress(address);
+  if(!loc)return;
+  if(latEl)latEl.value=String(loc.lat);
+  if(lngEl)lngEl.value=String(loc.lng);
+  setMsg('出発/終了地点の座標を取得しました');
+}
+
+function AdminClinics(){
+  function resetClinicForm(){
+    setClinicForm({id:'',name:'',shortName:'',color:'#0284c7',invoiceRecipient:'',faxSender:'',portalPin:'2026',portalLoginId:'',portalPassword:'',startAddress:'',endAddress:''});
+  }
+  function editClinic(c:Clinic){
+    setClinicForm(c);
+    setMsg(`${c.name} を編集中です`);
+  }
+  function valueOf(id:string){
+    const el=document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | null;
+    return (el?.value||'').trim();
+  }
+  function saveClinicFromDom(){
+    const name=valueOf('clinic-name-input');
+    if(!name)return setMsg('医院名を入力してください');
+    const oldId=clinicForm.id;
+    const shortName=valueOf('clinic-short-input') || name;
+    const id=oldId || safeClinicId(shortName||name);
+    const nextClinic:Clinic={
+      id,
+      name,
+      shortName,
+      color:valueOf('clinic-color-input') || '#0284c7',
+      invoiceRecipient:valueOf('clinic-invoice-input') || `${name}　御中`,
+      faxSender:valueOf('clinic-fax-input') || `${name}\n訪問担当`,
+      portalPin:valueOf('clinic-pin-input') || '2026',
+      portalLoginId:valueOf('clinic-login-id-input') || id,
+      portalPassword:valueOf('clinic-password-input') || valueOf('clinic-pin-input') || '2026',
+      startAddress:valueOf('clinic-start-address-input'),
+      startLat:Number(valueOf('clinic-start-lat-input')||0)||undefined,
+      startLng:Number(valueOf('clinic-start-lng-input')||0)||undefined,
+      endAddress:valueOf('clinic-end-address-input'),
+      endLat:Number(valueOf('clinic-end-lat-input')||0)||undefined,
+      endLng:Number(valueOf('clinic-end-lng-input')||0)||undefined,
+      memo:valueOf('clinic-memo-input')
+    };
+    const exists=clinics.some(c=>c.id===id);
+    const next=exists?clinics.map(c=>c.id===id?nextClinic:c):[...clinics,nextClinic];
+    saveClinicsLocal(next,id);
+    resetClinicForm();
+    setMsg('医院設定を保存しました');
+  }
+  function removeClinic(id:string){
+    if(id==='aloha')return setMsg('アロハ歯科は削除できません');
+    if(!confirm('この医院設定を削除しますか？患者データは削除されません。'))return;
+    const next=clinics.filter(c=>c.id!==id);
+    saveClinicsLocal(next,next[0]?.id||'aloha');
+    setMsg('医院設定を削除しました');
+  }
+  function clinicCounts(id:string){
+    return {
+      patients:patients.filter(p=>(p.clinic_id||'aloha')===id).length,
+      facilities:facilities.filter(f=>(f.clinic_id||'aloha')===id).length,
+      schedules:schedules.filter(s=>(s.clinic_id||'aloha')===id).length
+    };
+  }
+  const formKey=clinicForm.id || 'new-clinic-form';
+  return <AdminGate><div className='adminPage'>
+    <div className='adminHeader'><h2>🏥 医院管理</h2><button className='mini' onClick={()=>setTab('admin')}>戻る</button></div>
+    <AdminMenu/>
+    <div className='adminCard'>
+      <h3>現在の医院</h3>
+      <label>医院切替</label>
+      <select value={activeClinicId} onChange={e=>switchClinic(e.target.value)}>
+        {clinics.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+      </select>
+      <div className='small'>患者・施設・予定は選択中の医院だけ表示します。</div>
+    </div>
+    <div className='adminCard' key={formKey}>
+      <h3>{clinicForm.id?'医院を編集':'医院を追加'}</h3>
+      <label>医院名</label><input id='clinic-name-input' defaultValue={clinicForm.name||''} placeholder='例：たかた歯科医院'/>
+      <label>短縮名</label><input id='clinic-short-input' defaultValue={clinicForm.shortName||''} placeholder='例：TAKATA'/>
+      <label>テーマカラー</label><input id='clinic-color-input' defaultValue={clinicForm.color||'#0284c7'} placeholder='#0284c7'/>
+      <label>請求書宛名</label><input id='clinic-invoice-input' defaultValue={clinicForm.invoiceRecipient||''} placeholder='例：たかた歯科医院　御中'/>
+      <label>FAX送信名義</label><textarea id='clinic-fax-input' defaultValue={clinicForm.faxSender||''} placeholder={'例：たかた歯科医院\n訪問担当'}/>
+      <label>医院ログインID</label><input id='clinic-login-id-input' defaultValue={clinicForm.portalLoginId||clinicForm.id||''} placeholder='例：takata'/>
+      <label>医院ログインパスワード</label><input id='clinic-password-input' type='password' defaultValue={clinicForm.portalPassword||clinicForm.portalPin||'2026'}/>
+      <label>医院ログインPIN（旧方式）</label><input id='clinic-pin-input' type='password' inputMode='numeric' defaultValue={clinicForm.portalPin||'2026'}/>
+      <label>出発地点住所</label><textarea id='clinic-start-address-input' defaultValue={clinicForm.startAddress||''} placeholder='例：たかた歯科医院の住所'/>
+      <div className='grid3'><input id='clinic-start-lat-input' defaultValue={clinicForm.startLat?String(clinicForm.startLat):''} placeholder='出発 緯度'/><input id='clinic-start-lng-input' defaultValue={clinicForm.startLng?String(clinicForm.startLng):''} placeholder='出発 経度'/><button type='button' className='secondary' onClick={()=>geocodeClinicInput('clinic-start-address-input','clinic-start-lat-input','clinic-start-lng-input')}>座標取得</button></div>
+      <label>終了地点住所（任意）</label><textarea id='clinic-end-address-input' defaultValue={clinicForm.endAddress||''} placeholder='空欄なら出発地点に戻る扱い'/>
+      <div className='grid3'><input id='clinic-end-lat-input' defaultValue={clinicForm.endLat?String(clinicForm.endLat):''} placeholder='終了 緯度'/><input id='clinic-end-lng-input' defaultValue={clinicForm.endLng?String(clinicForm.endLng):''} placeholder='終了 経度'/><button type='button' className='secondary' onClick={()=>geocodeClinicInput('clinic-end-address-input','clinic-end-lat-input','clinic-end-lng-input')}>座標取得</button></div>
+      <label>メモ</label><textarea id='clinic-memo-input' defaultValue={clinicForm.memo||''} placeholder='医院別の注意点など'/>
+      <div className='grid2 actionRow'><button className='primary' onClick={saveClinicFromDom}>保存</button><button className='secondary' onClick={resetClinicForm}>クリア</button></div>
+      <div className='small'>入力中にキーボードが閉じないよう、保存時だけ内容を反映します。</div>
+    </div>
+    <div className='adminCard'>
+      <h3>登録医院</h3>
+      <div className='billingRows'>
+        {clinics.map(c=>{
+          const cnt=clinicCounts(c.id);
+          return <div key={c.id}>
+            <span><b>{c.name}</b><br/><small>{c.shortName} / ID:{c.portalLoginId||c.id} / 出発:{c.startAddress||'未設定'} / 患者{cnt.patients}・施設{cnt.facilities}・予定{cnt.schedules}</small></span>
+            <span><button className='mini' onClick={()=>editClinic(c)}>編集</button> <button className='mini' onClick={()=>removeClinic(c.id)}>削除</button></span>
+          </div>
+        })}
+      </div>
+    </div>
+  </div></AdminGate>
 }
 
 function AdminSettings(){
@@ -3157,14 +3851,14 @@ function createInvoicePreview(){
     @media print{button{display:none}}
   </style></head><body>
     <div class="issueDate">${new Date().toLocaleDateString("ja-JP")}</div><h1>請　求　書</h1>
-    <div class="invoiceTo">${CLINIC_CONFIG.invoiceRecipient}</div>
+    <div class="invoiceTo">アロハ歯科小児・矯正歯科　御中</div>
     <div class="invoiceMonth">${billingMonth.replace('-', '年')}月請求書</div>
     <div class="topInfo">
       <div class="billAmount">御請求金額　${yen(b.amount+Math.round(b.amount*0.1))}</div>
       <div class="issuer">
-        <b>${CLINIC_CONFIG.issuerName}</b><br/>
-        ${CLINIC_CONFIG.issuerAddress}<br/>
-        ＴＥＬ：${CLINIC_CONFIG.issuerTel}
+        <b>訪問歯科支援センターフロンティア</b><br/>
+        福岡県久留米市津福本町266-1<br/>
+        ＴＥＬ：0942-44-2678
       </div>
     </div>
 
@@ -3294,7 +3988,41 @@ function AdminBillingEnhanced(){
   </div>
 }
 
-return <main className='wrap'><section className='head appHeader'><div className='brandHeader'><img src='/apple-touch-icon.png' alt='FRONTIER OS' className='headerAppIcon'/><h1>FRONTIER OS</h1><span className='versionBadge'>{FRONTIER_VERSION}</span></div>{demoMode&&<div className='demoBanner'>デモモード中：本番データは変更されません</div>}{demoMode&&<div className='demoMiniControls'><button onClick={()=>setTab('today')}>今日</button><button onClick={demoOpenFirstDetail}>詳細</button><button onClick={demoOpenCalendarRoute}>予定</button><button onClick={exitDemoMode}>終了</button></div>}</section><section className='card'>{tab==='home'&&<div className={easyMode?'easyHome':'standardHome'}>
+
+const calendarJumpCss=`
+.calendarBackFloating{
+  position:fixed;
+  right:14px;
+  bottom:92px;
+  z-index:9998;
+  border:0;
+  border-radius:999px;
+  padding:12px 15px;
+  background:#0284c7;
+  color:#fff;
+  font-weight:900;
+  font-size:14px;
+  box-shadow:0 8px 22px rgba(2,132,199,.32);
+}
+.calendarBackFloating:active{transform:scale(.98)}
+@media print{.calendarBackFloating{display:none}}
+`;
+const CalendarBackFloatingButton=()=>{
+  const show=['calendar','today','route1','route2','tomorrow'].includes(tab);
+  if(!show)return null;
+  return <button type='button' className='calendarBackFloating' onClick={()=>{
+    setTab('calendar');
+    setTimeout(()=>{
+      const el=document.getElementById('calendar-top');
+      if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+      else window.scrollTo({top:0,behavior:'smooth'});
+    },80);
+  }}>📅 カレンダー</button>;
+};
+
+if(tab==='clinicPortal' && !clinicUnlocked)return <ClinicPortal/>;
+
+return <main className='wrap'><style>{calendarJumpCss}</style><CalendarBackFloatingButton/><section className='head appHeader'><div className='brandHeader'><img src='/apple-touch-icon.png' alt='FRONTIER OS' className='headerAppIcon'/><h1>{activeClinic()?.name||'FRONTIER OS'}</h1><span className='versionBadge'>{FRONTIER_VERSION}</span>{clinicUnlocked&&<span className='versionBadge'>医院ログイン中</span>}{clinicUnlocked&&<button className='mini' onClick={()=>{setClinicUnlocked(false);setTab('clinicPortal')}}>ログアウト</button>}</div>{demoMode&&<div className='demoBanner'>デモモード中：本番データは変更されません</div>}{demoMode&&<div className='demoMiniControls'><button onClick={()=>setTab('today')}>今日</button><button onClick={demoOpenFirstDetail}>詳細</button><button onClick={demoOpenCalendarRoute}>予定</button><button onClick={exitDemoMode}>終了</button></div>}</section><RouteOptimizationPreview/><section className='card'>{tab==='home'&&<div className={easyMode?'easyHome':'standardHome'}>
   <div className='easyHero'>
     <div>
       <div className='easyLabel'>かんたんモード</div>
@@ -3344,7 +4072,14 @@ return <main className='wrap'><section className='head appHeader'><div className
   <button type='button' className={String(scheduleLocationType)==='facility'?'on':''} onClick={()=>{setScheduleLocationType('facility');setFacilityId(facilities[0]?.id||'');setSelectedPatientIds([]);setSchedulePatientSearch('')}}>施設</button>
   <button type='button' className={String(scheduleLocationType)==='home'?'on':''} onClick={()=>{setScheduleLocationType('home');setFacilityId('');setSelectedPatientIds([]);setSchedulePatientSearch('')}}>居宅</button>
 </div>
-{String(scheduleLocationType)==='facility'&&<><label>施設</label><select value={facilityId} onChange={e=>{setFacilityId(e.target.value);setSelectedPatientIds([]);setSchedulePatientSearch('')}}>{facilities.map(f=><option key={f.id} value={f.id}>{f.name}</option>)}</select></>}</>}<label>患者検索</label><input value={schedulePatientSearch} onChange={e=>setSchedulePatientSearch(e.target.value)} placeholder='患者名・フリガナ・部屋番号で検索'/><label>患者</label><div className='checks'>{filteredFacilityPatients.map(p=><label className='checkrow' key={p.id}><input type='checkbox' checked={selectedPatientIds.includes(p.id)} onChange={e=>setSelectedPatientIds(prev=>e.target.checked?[...prev,p.id]:prev.filter(x=>x!==p.id))}/><span>{p.room?`${p.room}　`:''}{p.name}</span>{p.visit_frequency&&<span className='badge'>頻度：{p.visit_frequency}</span>}</label>)}</div><label>次回日時</label><input type='datetime-local' value={startAt} onChange={e=>setStartAt(e.target.value)}/><div className='grid3'><button className='secondary' onClick={()=>adjustNextDraftDays(7)}>+1週</button><button className='secondary' onClick={()=>adjustNextDraftDays(14)}>+2週</button><button className='secondary' onClick={()=>adjustNextDraftDays(28)}>+4週</button></div><label>診療内容</label><select value={treatment} onChange={e=>setTreatment(e.target.value)}>{treatmentOptions.map(t=><option key={t}>{t}</option>)}</select><label>備考</label><textarea value={scheduleMemo} onChange={e=>setScheduleMemo(e.target.value)} placeholder='次回メモ・注意事項'/><button className='primary' onClick={saveSchedule}>次回予定を保存</button></div>}{tab==='patients'&&<div><div className='row'><h2>👤 患者</h2><button className='mini' onClick={newPatient}>新規</button></div>{showPatientForm&&renderPatientForm()}<label>検索</label><input className='search' value={patientSearch} onChange={e=>setPatientSearch(e.target.value)} placeholder='患者名・施設・電話・住所'/>{filteredPatients.map(p=>{const f=getFacility(p.facility_id);const n=nextSchedule(p);return <div className='item' key={p.id} onClick={()=>openPatient(p)}><div className='row'><b>{p.name}</b><button className='mini'>開く</button></div><div className='small'>{f?.name} {p.room?'/ '+p.room:''}</div><span className='badge'>今月 {monthCount(p)}回</span>{n&&<span className='badge'>次回 {fmt(n.start_at)}</span>}</div>})}</div>}{tab==='facilities'&&<div><h2>🏢 施設</h2><div className='bulkBox'><button className='secondary geoButton' onClick={bulkGeocodeFacilities}>施設座標を一括取得</button><button className='secondary geoButton' onClick={bulkGeocodePatients}>患者/居宅座標を一括取得</button><div className='small'>患者住所がある場合は患者住所、なければ施設住所から取得します。</div></div><label>施設名</label><input value={facilityName} onChange={e=>setFacilityName(e.target.value)}/><label>住所</label><input value={facilityAddress} onChange={e=>setFacilityAddress(e.target.value)}/><label>電話</label><input value={facilityPhone} onChange={e=>setFacilityPhone(e.target.value)}/><div className='faxSettingBox'><h3>FAX設定</h3><label>FAX番号</label><input value={facilityFax} onChange={e=>setFacilityFax(e.target.value)} placeholder='092-000-0000'/><label>送信単位</label><select value={facilityFaxType} onChange={e=>setFacilityFaxType(e.target.value)}><option value='monthly'>月ごと</option><option value='weekly'>週ごと</option><option value='custom'>都度指定</option></select><div className='small'>まずはPDF作成・プレビューまで対応。送信は確認後に手動で行えます。</div></div><div className='grid2'><div><label>緯度</label><input value={facilityLat} onChange={e=>setFacilityLat(e.target.value)} placeholder='33.5902'/></div><div><label>経度</label><input value={facilityLng} onChange={e=>setFacilityLng(e.target.value)} placeholder='130.4017'/></div></div><div className='small'>住所保存時に座標を自動取得します。取得できない場合は下のボタンで再取得してください。</div><button className='secondary geoButton' onClick={geocodeFacilityAddress}>住所から座標を取得</button><button className='primary' onClick={saveFacility}>{editingFacilityId?'更新':'登録'}</button><label>検索</label><input className='search' value={facilitySearch} onChange={e=>setFacilitySearch(e.target.value)}/>{filteredFacilities.map(f=><div className='item' key={f.id}><b>{f.name}</b><div className='small faxAddressName'>FAX宛名：{withOnchu(f.name)}</div><div className='small'>{f.address} {f.phone}</div><div className='small'>FAX：{f.fax_number||'未登録'} / {f.fax_schedule_type==='weekly'?'週ごと':f.fax_schedule_type==='custom'?'都度指定':'月ごと'}</div><div className='small'>{f.latitude&&f.longitude?`座標：${f.latitude}, ${f.longitude}`:'座標未登録'}</div><div className='faxButtons faxButtons6'><button className='secondary' onClick={()=>createFacilityFaxPdf(f,'today')}>今日PDF</button><button className='secondary' onClick={()=>createFacilityFaxPdf(f,'tomorrow')}>明日PDF</button><button className='secondary' onClick={()=>createFacilityFaxPdf(f,'weekly')}>今週PDF</button><button className='secondary' onClick={()=>createFacilityFaxPdf(f,'next_week')}>来週PDF</button><button className='secondary' onClick={()=>createFacilityFaxPdf(f,'current_month')}>今月PDF</button><button className='secondary' onClick={()=>createFacilityFaxPdf(f,'monthly')}>来月PDF</button></div><div className='grid3'><button className='secondary' onClick={()=>editFacility(f)}>編集</button><button className='secondary' onClick={()=>openMap(f.address,f.name)}>地図</button><button className='secondary danger' onClick={()=>deleteFacility(f.id)}>削除</button></div></div>)}</div>}{tab==='calendar'&&<div><CalendarMonth/><CalendarDayDetail/><h2 id='schedule-form'>{nextDraftInfo?'📅 次回予定の確認・編集':(editingScheduleId?'✏️ 予定編集':'📅 予定登録')}</h2>{nextDraftInfo&&<div className='nextDraftBox'><b>次回登録中</b><div className='small'>{nextDraftInfo}</div><div className='grid3'><button className='secondary' onClick={()=>adjustNextDraftDays(7)}>+1週</button><button className='secondary' onClick={()=>adjustNextDraftDays(14)}>+2週</button><button className='secondary' onClick={()=>adjustNextDraftDays(28)}>+4週</button></div><div className='small'>下の「日時」「診療内容」を確認して、最後に保存してください。</div></div>}<label>区分</label>
+{String(scheduleLocationType)==='facility'&&<><label>施設</label><select value={facilityId} onChange={e=>{setFacilityId(e.target.value);setSelectedPatientIds([]);setSchedulePatientSearch('')}}>{facilities.map(f=><option key={f.id} value={f.id}>{f.name}</option>)}</select></>}</>}<div className='aiScheduleBox'>
+  <h3>🤖 予定作成AI</h3>
+  <div className='small' style={{whiteSpace:'pre-line'}}>{aiScheduleCreateReason()}</div>
+  <div className='grid2 actionRow'>
+    <button type='button' className='secondary' onClick={()=>aiApplyTopSchedulePatients(3)}>AI候補を3名選択</button>
+    <button type='button' className='secondary' onClick={aiSuggestScheduleTime}>空き時間を提案</button>
+  </div>
+</div><label>患者検索</label><input value={schedulePatientSearch} onChange={e=>setSchedulePatientSearch(e.target.value)} placeholder='患者名・フリガナ・部屋番号で検索'/><label>患者</label><div className='checks'>{filteredFacilityPatients.map(p=><label className={'checkrow '+(patientWeekCount(p)===0?'needsSchedule':'')} key={p.id}><input type='checkbox' checked={selectedPatientIds.includes(p.id)} onChange={e=>setSelectedPatientIds(prev=>e.target.checked?[...prev,p.id]:prev.filter(x=>x!==p.id))}/><span>{p.room?`${p.room}　`:''}{p.name}</span>{patientWeekCount(p)===0&&<span className='badge'>今週未予定</span>}{p.visit_frequency&&<span className='badge'>頻度：{p.visit_frequency}</span>}<span className='badge'>{patientScheduleStatusLabel(p)}</span></label>)}</div><label>次回日時</label><input type='datetime-local' value={startAt} onChange={e=>setStartAt(e.target.value)}/><div className='grid3'><button className='secondary' onClick={()=>adjustNextDraftDays(7)}>+1週</button><button className='secondary' onClick={()=>adjustNextDraftDays(14)}>+2週</button><button className='secondary' onClick={()=>adjustNextDraftDays(28)}>+4週</button></div><label>診療内容</label><select value={treatment} onChange={e=>setTreatment(e.target.value)}>{treatmentOptions.map(t=><option key={t}>{t}</option>)}</select><label>備考</label><textarea value={scheduleMemo} onChange={e=>setScheduleMemo(e.target.value)} placeholder='次回メモ・注意事項'/><button className='primary' onClick={saveSchedule}>次回予定を保存</button></div>}{tab==='patients'&&<div><div className='row'><h2>👤 患者</h2><button className='mini' onClick={newPatient}>新規</button></div>{showPatientForm&&renderPatientForm()}<label>検索</label><input className='search' value={patientSearch} onChange={e=>setPatientSearch(e.target.value)} placeholder='患者名・施設・電話・住所'/>{filteredPatients.map(p=>{const f=getFacility(p.facility_id);const n=nextSchedule(p);return <div className='item' key={p.id} onClick={()=>openPatient(p)}><div className='row'><b>{p.name}</b><button className='mini'>開く</button></div><div className='small'>{f?.name} {p.room?'/ '+p.room:''}</div><span className='badge'>今月 {monthCount(p)}回</span>{n&&<span className='badge'>次回 {fmt(n.start_at)}</span>}</div>})}</div>}{tab==='facilities'&&<div><h2>🏢 施設</h2><div className='bulkBox'><button className='secondary geoButton' onClick={bulkGeocodeFacilities}>施設座標を一括取得</button><button className='secondary geoButton' onClick={bulkGeocodePatients}>患者/居宅座標を一括取得</button><div className='small'>患者住所がある場合は患者住所、なければ施設住所から取得します。</div></div><label>施設名</label><input value={facilityName} onChange={e=>setFacilityName(e.target.value)}/><label>住所</label><input value={facilityAddress} onChange={e=>setFacilityAddress(e.target.value)}/><label>電話</label><input value={facilityPhone} onChange={e=>setFacilityPhone(e.target.value)}/><div className='faxSettingBox'><h3>FAX設定</h3><label>FAX番号</label><input value={facilityFax} onChange={e=>setFacilityFax(e.target.value)} placeholder='092-000-0000'/><label>送信単位</label><select value={facilityFaxType} onChange={e=>setFacilityFaxType(e.target.value)}><option value='monthly'>月ごと</option><option value='weekly'>週ごと</option><option value='custom'>都度指定</option></select><div className='small'>まずはPDF作成・プレビューまで対応。送信は確認後に手動で行えます。</div></div><div className='grid2'><div><label>緯度</label><input value={facilityLat} onChange={e=>setFacilityLat(e.target.value)} placeholder='33.5902'/></div><div><label>経度</label><input value={facilityLng} onChange={e=>setFacilityLng(e.target.value)} placeholder='130.4017'/></div></div><div className='small'>住所保存時に座標を自動取得します。取得できない場合は下のボタンで再取得してください。</div><button className='secondary geoButton' onClick={geocodeFacilityAddress}>住所から座標を取得</button><button className='primary' onClick={saveFacility}>{editingFacilityId?'更新':'登録'}</button><label>検索</label><input className='search' value={facilitySearch} onChange={e=>setFacilitySearch(e.target.value)}/>{filteredFacilities.map(f=><div className='item' key={f.id}><b>{f.name}</b><div className='small faxAddressName'>FAX宛名：{withOnchu(f.name)}</div><div className='small'>{f.address} {f.phone}</div><div className='small'>FAX：{f.fax_number||'未登録'} / {f.fax_schedule_type==='weekly'?'週ごと':f.fax_schedule_type==='custom'?'都度指定':'月ごと'}</div><div className='small'>{f.latitude&&f.longitude?`座標：${f.latitude}, ${f.longitude}`:'座標未登録'}</div><div className='faxButtons faxButtons6'><button className='secondary' onClick={()=>createFacilityFaxPdf(f,'today')}>今日PDF</button><button className='secondary' onClick={()=>createFacilityFaxPdf(f,'tomorrow')}>明日PDF</button><button className='secondary' onClick={()=>createFacilityFaxPdf(f,'weekly')}>今週PDF</button><button className='secondary' onClick={()=>createFacilityFaxPdf(f,'next_week')}>来週PDF</button><button className='secondary' onClick={()=>createFacilityFaxPdf(f,'current_month')}>今月PDF</button><button className='secondary' onClick={()=>createFacilityFaxPdf(f,'monthly')}>来月PDF</button></div><div className='grid3'><button className='secondary' onClick={()=>editFacility(f)}>編集</button><button className='secondary' onClick={()=>openMap(f.address,f.name)}>地図</button><button className='secondary danger' onClick={()=>deleteFacility(f.id)}>削除</button></div></div>)}</div>}{tab==='calendar'&&<div><CalendarMonth/><CalendarDayDetail/><h2 id='schedule-form'>{nextDraftInfo?'📅 次回予定の確認・編集':(editingScheduleId?'✏️ 予定編集':'📅 予定登録')}</h2>{nextDraftInfo&&<div className='nextDraftBox'><b>次回登録中</b><div className='small'>{nextDraftInfo}</div><div className='grid3'><button className='secondary' onClick={()=>adjustNextDraftDays(7)}>+1週</button><button className='secondary' onClick={()=>adjustNextDraftDays(14)}>+2週</button><button className='secondary' onClick={()=>adjustNextDraftDays(28)}>+4週</button></div><div className='small'>下の「日時」「診療内容」を確認して、最後に保存してください。</div></div>}<label>区分</label>
 <div className='segmentedChoice'>
   <button type='button' className={String(scheduleLocationType)==='facility'?'on':''} onClick={()=>{setScheduleLocationType('facility');setFacilityId(facilities[0]?.id||'');setSelectedPatientIds([]);setSchedulePatientSearch('')}}>施設</button>
   <button type='button' className={String(scheduleLocationType)==='home'?'on':''} onClick={()=>{setScheduleLocationType('home');setFacilityId('');setSelectedPatientIds([]);setSchedulePatientSearch('')}}>居宅</button>
@@ -3354,7 +4089,7 @@ return <main className='wrap'><section className='head appHeader'><div className
   <button type='button' className={String(scheduleLocationType)==='facility'?'on':''} onClick={()=>{setScheduleLocationType('facility');setFacilityId(facilities[0]?.id||'');setSelectedPatientIds([]);setSchedulePatientSearch('')}}>施設</button>
   <button type='button' className={String(scheduleLocationType)==='home'?'on':''} onClick={()=>{setScheduleLocationType('home');setFacilityId('');setSelectedPatientIds([]);setSchedulePatientSearch('')}}>居宅</button>
 </div>
-{String(scheduleLocationType)==='facility'&&<><label>施設</label><select value={facilityId} onChange={e=>{setFacilityId(e.target.value);setSelectedPatientIds([]);setSchedulePatientSearch('')}}>{facilities.map(f=><option key={f.id} value={f.id}>{f.name}</option>)}</select></>}</>}<label>患者検索</label><input value={schedulePatientSearch} onChange={e=>setSchedulePatientSearch(e.target.value)} placeholder='患者名・フリガナ・部屋番号で検索'/><label>患者</label><div className='checks'>{filteredFacilityPatients.map(p=><label className='checkrow' key={p.id}><input type='checkbox' checked={selectedPatientIds.includes(p.id)} onChange={e=>setSelectedPatientIds(prev=>e.target.checked?[...prev,p.id]:prev.filter(x=>x!==p.id))}/><span>{p.room?`${p.room}　`:''}{p.name}</span></label>)}</div><label>処置</label><select value={treatment} onChange={e=>setTreatment(e.target.value)}>{treatmentOptions.map(t=><option key={t}>{t}</option>)}</select>
+{String(scheduleLocationType)==='facility'&&<><label>施設</label><select value={facilityId} onChange={e=>{setFacilityId(e.target.value);setSelectedPatientIds([]);setSchedulePatientSearch('')}}>{facilities.map(f=><option key={f.id} value={f.id}>{f.name}</option>)}</select></>}</>}<label>患者検索</label><input value={schedulePatientSearch} onChange={e=>setSchedulePatientSearch(e.target.value)} placeholder='患者名・フリガナ・部屋番号で検索'/><label>患者</label><div className='checks'>{filteredFacilityPatients.map(p=><label className={'checkrow '+(patientWeekCount(p)===0?'needsSchedule':'')} key={p.id}><input type='checkbox' checked={selectedPatientIds.includes(p.id)} onChange={e=>setSelectedPatientIds(prev=>e.target.checked?[...prev,p.id]:prev.filter(x=>x!==p.id))}/><span>{p.room?`${p.room}　`:''}{p.name}</span>{patientWeekCount(p)===0&&<span className='badge'>今週未予定</span>}<span className='badge'>{patientScheduleStatusLabel(p)}</span></label>)}</div><label>処置</label><select value={treatment} onChange={e=>setTreatment(e.target.value)}>{treatmentOptions.map(t=><option key={t}>{t}</option>)}</select>
 <details className='treatmentMasterBox'>
   <summary>処置内容を編集</summary>
   <div className='treatmentAddRow'>
@@ -3374,7 +4109,17 @@ return <main className='wrap'><section className='head appHeader'><div className
   </select>
   <button type='button' className='secondary timeMini' onClick={()=>moveScheduleTime(-15)}>-15分</button>
   <button type='button' className='secondary timeMini' onClick={()=>moveScheduleTime(15)}>+15分</button>
-</div><label>備考</label><textarea value={scheduleMemo} onChange={e=>setScheduleMemo(e.target.value)}/><button className='primary' onClick={saveSchedule}>{nextDraftInfo?'次回予定を保存':(editingScheduleId?'予定を更新':'保存')}</button><h3>全予定</h3>{renderScheduleCards(sortedSchedules,{showDate:true,from:'calendar'})}</div>}{tab==='admin'&&<AdminDashboard/>}{tab==='adminStaff'&&<AdminStaff/>}{tab==='adminFax'&&<AdminFax/>}{tab==='adminReports'&&<AdminReports/>}{tab==='adminSettings'&&<AdminSettings/>}{tab==='adminBilling'&&<AdminBillingEnhanced/>}{tab==='adminBillingSettings'&&<AdminBillingSettings/>}<AddPatientModal/><BeginnerTutorial/><GuidedDemoPanel/><CancelReasonModal/>{msg&&<div className='msg'>{msg}</div>}</section><nav className='bottom'><button className={tab==='home'?'on':''} onClick={()=>setTab('home')}>🏠<br/>ホーム</button><button className={tab==='today'?'on':''} onClick={()=>setTab('today')}>🚗<br/>今日</button><button className={tab==='route1'?'on':''} onClick={()=>setTab('route1')}>①<br/>R1</button><button className={tab==='route2'?'on':''} onClick={()=>setTab('route2')}>②<br/>R2</button><button className={tab==='tomorrow'?'on':''} onClick={()=>setTab('tomorrow')}>📅<br/>明日</button><button className={tab==='patients'?'on':''} onClick={()=>setTab('patients')}>👤<br/>患者</button><button className={tab==='facilities'?'on':''} onClick={()=>setTab('facilities')}>🏢<br/>施設</button><button className={tab.startsWith('admin')?'on':''} onClick={()=>setTab('admin')}>⚙️<br/>管理</button><button className={tab==='calendar'?'on':''} onClick={()=>setTab('calendar')}>📅<br/>予定</button></nav></main>
+</div><label>備考</label><textarea value={scheduleMemo} onChange={e=>setScheduleMemo(e.target.value)}/><button className='primary' onClick={saveSchedule}>{nextDraftInfo?'次回予定を保存':(editingScheduleId?'予定を更新':'保存')}</button><h3>全予定</h3>{renderScheduleCards(sortedSchedules,{showDate:true,from:'calendar'})}</div>}{tab==='admin'&&<AdminDashboard/>}{tab==='adminStaff'&&<AdminStaff/>}{tab==='adminFax'&&<AdminFax/>}{tab==='adminReports'&&<AdminReports/>}{tab==='adminAI'&&<AdminAI/>}{tab==='adminClinics'&&<AdminClinics/>}{tab==='adminSettings'&&<AdminSettings/>}{tab==='adminBilling'&&<AdminBillingEnhanced/>}{tab==='adminBillingSettings'&&<AdminBillingSettings/>}<AddPatientModal/><BeginnerTutorial/><GuidedDemoPanel/><CancelReasonModal/>{msg&&<div className='msg'>{msg}</div>}</section><nav className='bottom'>
+  <button className={tab==='home'?'on':''} onClick={()=>setTab('home')}>🏠<br/>ホーム</button>
+  <button className={tab==='today'?'on':''} onClick={()=>setTab('today')}>🚗<br/>今日</button>
+  <button className={tab==='route1'?'on':''} onClick={()=>setTab('route1')}>①<br/>R1</button>
+  <button className={tab==='route2'?'on':''} onClick={()=>setTab('route2')}>②<br/>R2</button>
+  <button className={tab==='tomorrow'?'on':''} onClick={()=>setTab('tomorrow')}>📅<br/>明日</button>
+  <button className={tab==='patients'?'on':''} onClick={()=>setTab('patients')}>👤<br/>患者</button>
+  <button className={tab==='facilities'?'on':''} onClick={()=>setTab('facilities')}>🏢<br/>施設</button>
+  {clinicUnlocked ? null : <button className={tab.startsWith('admin')?'on':''} onClick={()=>setTab('admin')}>⚙️<br/>管理</button>}
+  <button className={tab==='calendar'?'on':''} onClick={()=>setTab('calendar')}>📅<br/>予定</button>
+</nav></main>
 }
 
 
@@ -3504,5 +4249,72 @@ CSS追加推奨:
   border:1px solid #a5f3fc;
   font-size:12px;
   font-weight:900;
+}
+*/
+
+/*
+CSS追加推奨:
+.medicalHistoryNotice{
+  margin-top:8px;
+  padding:8px 10px;
+  border-radius:12px;
+  background:#fff1f2;
+  color:#be123c;
+  border:1px solid #fecdd3;
+  font-weight:900;
+  font-size:13px;
+}
+*/
+
+/*
+CSS追加推奨:
+.modalOverlay{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:9999;display:flex;align-items:flex-end;justify-content:center;padding:12px}
+.routePreviewModal{background:#fff;border-radius:22px 22px 0 0;max-height:88vh;overflow:auto;width:min(760px,100%);padding:18px;box-shadow:0 -12px 36px rgba(15,23,42,.25)}
+.routePreviewList{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.routePreviewItem{display:flex;align-items:center;gap:10px;border:1px solid #bae6fd;background:#f0f9ff;border-radius:16px;padding:10px}
+.routePreviewNo{width:34px;height:34px;border-radius:999px;background:#0284c7;color:#fff;display:grid;place-items:center;font-weight:900}
+.routePreviewMain{flex:1}
+.routePreviewBtns{display:flex;gap:6px}
+*/
+
+/*
+CSS追加推奨:
+.checkrow.needsSchedule{
+  border-color:#f97316;
+  background:#fff7ed;
+}
+*/
+
+/*
+CSS追加推奨:
+.checkrow.needsSchedule{
+  border-color:#f97316;
+  background:#fff7ed;
+}
+*/
+
+/*
+CSS追加推奨:
+.aiSummaryBox{
+  background:#f8fafc;
+  border:1px solid #bae6fd;
+}
+.aiSummaryBox .infoLine b{
+  text-align:left;
+  line-height:1.45;
+}
+*/
+
+/*
+CSS追加推奨:
+.aiScheduleBox{
+  border:1px solid #bae6fd;
+  background:#f0f9ff;
+  border-radius:16px;
+  padding:12px;
+  margin:10px 0;
+}
+.aiScheduleBox h3{
+  margin:0 0 8px;
 }
 */
